@@ -34,7 +34,11 @@ if [ "$?" = "0" ]; then
     if ! cat /etc/os-release 2> /dev/null | grep 'ID=raspbian' > /dev/null; then
         # Non-Raspbian, we can launch weston under X.
         check_install
-        XDG_DATA_DIRS=$XDG_DATA_DIRS:$PREFIX/share/ $PREFIX/bin/weston
+        if [ -x $PREFIX/bin/weston ]; then
+            XDG_DATA_DIRS=$XDG_DATA_DIRS:$PREFIX/share/ $PREFIX/bin/weston
+        else
+            XDG_DATA_DIRS=$XDG_DATA_DIRS:$PREFIX/share/ weston
+        fi
     else
         echo "You cannot run Maynard under X." >&2
         exit 1
