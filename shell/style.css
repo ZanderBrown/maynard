@@ -45,7 +45,7 @@
 .maynard-grid-item {
     background-color: alpha(black, 0.6);
     color: white;
-    font: Droid Sans 12;
+    font: 12px Sans;
     border-style: solid;
     border-color: #6d6d6d;
     border-width: 1px;
