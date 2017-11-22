@@ -24,7 +24,7 @@
 
 #include "config.h"
 #ifdef HAVE_NEW_WESTON
-#include <libweston-1/compositor.h>
+#include <libweston-3/compositor.h>
 #else
 #include <weston/compositor.h>
 #endif

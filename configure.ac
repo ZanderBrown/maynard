@@ -35,13 +35,13 @@ PKG_CHECK_MODULES([GTK], [
 ])
 
 PKG_CHECK_MODULES([NEW_WESTON], [
-	weston >= 1.12
-	libweston-1
+	weston >= 3
+	libweston-3
 	],
 	[AC_DEFINE([HAVE_NEW_WESTON],
 	[1],
-	[Using weston 1.12 or newer])],
-	[AC_MSG_WARN([Not using weston 1.12 or newer])]
+	[Using weston 3 or newer])],
+	[AC_MSG_WARN([Not using weston 3 or newer])]
 )
 
 GLIB_GSETTINGS
