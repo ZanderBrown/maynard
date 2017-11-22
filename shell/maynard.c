@@ -900,6 +900,8 @@ main (int argc,
       !desktop->helper)
     {
       fprintf (stderr, "could not find output, shell or helper modules\n");
+      fprintf (stderr, "output: %p, shell: %p, wshell: %p, helper: %p\n",
+               desktop->output, desktop->shell, desktop->wshell, desktop->helper);
       return -1;
     }
 
