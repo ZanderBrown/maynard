@@ -43,6 +43,8 @@ shell/shell-helper-client-protocol.h
 shell/shell-helper-protocol.c
 shell/shell-helper-server-protocol.h
 shell/mod-shell-helper-protocol.c
+shell/weston-desktop-shell-client-protocol.h
+shell/weston-desktop-shell-protocol.c
 shell/maynard-resources.c
 shell/maynard-resources.h
 shell/maynard
