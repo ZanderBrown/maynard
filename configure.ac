@@ -26,7 +26,7 @@ PKG_PROG_PKG_CONFIG()
 
 PKG_CHECK_MODULES([GTK], [
 	wayland-client >= 1.0.2
-	weston >= 1.5.91
+	weston >= 3
 	gtk+-3.0 >= 3.10
 	gtk+-wayland-3.0
 	libgnome-menu-3.0
@@ -34,15 +34,10 @@ PKG_CHECK_MODULES([GTK], [
 	alsa
 ])
 
-PKG_CHECK_MODULES([NEW_WESTON], [
+PKG_CHECK_MODULES([WESTON], [
 	weston >= 3
 	libweston-3
-	],
-	[AC_DEFINE([HAVE_NEW_WESTON],
-	[1],
-	[Using weston 3 or newer])],
-	[AC_MSG_WARN([Not using weston 3 or newer])]
-)
+])
 
 GLIB_GSETTINGS
 
