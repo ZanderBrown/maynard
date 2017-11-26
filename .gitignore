@@ -37,14 +37,10 @@ _gen
 /stamp-h1
 /maynard-*.tar.xz
 /maynard
-shell/desktop-shell-client-protocol.h
-shell/desktop-shell-protocol.c
-shell/shell-helper-client-protocol.h
-shell/shell-helper-protocol.c
-shell/shell-helper-server-protocol.h
+shell/*-client-protocol.h
+shell/*-server-protocol.h
+shell/*-protocol.c
 shell/mod-shell-helper-protocol.c
-shell/weston-desktop-shell-client-protocol.h
-shell/weston-desktop-shell-protocol.c
 shell/maynard-resources.c
 shell/maynard-resources.h
 shell/maynard
