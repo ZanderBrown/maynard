@@ -497,19 +497,24 @@ scale_background (GdkPixbuf *original_pixbuf)
   /* Scale original_pixbuf so it mostly fits on the screen.
    * If the aspect ratio is different than a bit on the right or on the
    * bottom could be cropped out. */
-  GdkScreen *screen = gdk_screen_get_default ();
-  gint screen_width, screen_height;
+  GdkDisplay *display = gdk_display_get_default ();
+  /* There's no primary monitor on nested wayland so just use the
+     first one for now */
+  GdkMonitor *monitor = gdk_display_get_monitor (display, 0);
+  GdkRectangle geom;
   gint original_width, original_height;
   gint final_width, final_height;
   gdouble ratio_horizontal, ratio_vertical, ratio;
 
-  screen_width = gdk_screen_get_width (screen);
-  screen_height = gdk_screen_get_height (screen);
+  g_return_val_if_fail(monitor, NULL);
+
+  gdk_monitor_get_geometry (monitor, &geom);
+
   original_width = gdk_pixbuf_get_width (original_pixbuf);
   original_height = gdk_pixbuf_get_height (original_pixbuf);
 
-  ratio_horizontal = (double) screen_width / original_width;
-  ratio_vertical = (double) screen_height / original_height;
+  ratio_horizontal = (double) geom.width / original_width;
+  ratio_vertical = (double) geom.height / original_height;
   ratio = MAX (ratio_horizontal, ratio_vertical);
 
   final_width = ceil (ratio * original_width);
