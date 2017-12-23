@@ -156,7 +156,6 @@ app_launcher_new_from_desktop_info (MaynardLauncher *self,
     GDesktopAppInfo *info)
 {
   GIcon *icon;
-  GtkWidget *alignment;
   GtkWidget *image;
   GtkWidget *button;
   GtkWidget *overlay;
@@ -197,9 +196,6 @@ app_launcher_new_from_desktop_info (MaynardLauncher *self,
   gtk_container_add (GTK_CONTAINER (revealer), label);
 
   /* icon button to load the app */
-  alignment = gtk_alignment_new (0.5, 0.5, 1, 1);
-  gtk_container_add (GTK_CONTAINER (overlay), alignment);
-
   icon = g_app_info_get_icon (G_APP_INFO (info));
   image = gtk_image_new_from_gicon (icon, GTK_ICON_SIZE_DIALOG);
   button = gtk_button_new ();
@@ -213,7 +209,7 @@ app_launcher_new_from_desktop_info (MaynardLauncher *self,
   g_object_set (image,
       "margin", 30,
       NULL);
-  gtk_container_add (GTK_CONTAINER (alignment), button);
+  gtk_container_add (GTK_CONTAINER (overlay), button);
 
   /* TODO: a bit ugly */
   g_object_set_data (G_OBJECT (button), "launcher", self);
