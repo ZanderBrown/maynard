@@ -391,7 +391,7 @@ shell_helper_curtain(struct wl_client *client,
 
 		if (!helper->curtain_view) {
 			weston_layer_init(&helper->curtain_layer,
-					  &helper->panel_layer->link);
+					  helper->compositor);
 
 			helper->curtain_view = shell_curtain_create_view(helper, surface);
 
