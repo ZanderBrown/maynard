@@ -3,34 +3,44 @@
 }
 
 .maynard-system {
-    background-color: #6d6d6d;
+    background: #6d6d6d;
     padding: 13px;
     color: #fcfcfc;
 }
 
 .maynard-system:hover {
-    background-color: alpha(#6d6d6d, 0.8);
+    background: alpha(#6d6d6d, 0.8);
     color: white;
 }
 
 .maynard-audio {
-    background-color: #b4b4b4;
+    background: #b4b4b4;
     color: #fcfcfc;
     padding: 13px;
 }
 
 .maynard-audio:hover {
-    background-color: alpha(#b4b4b4, 0.8);
+    background: alpha(#b4b4b4, 0.8);
     color: white;
+}
+
+.maynard-system, .maynard-system:hover, .maynard-audio, .maynard-audio:hover {
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
 }
 
 .maynard-apps {
     color: #bebebe;
+    border-radius: 0;
+    border: none;
 }
 
 .maynard-apps:hover {
-    background-color: alpha(black, 0.2);
+    background: alpha(black, 0.2);
     color: white;
+    border: none;
+    box-shadow: none;
 }
 
 .maynard-clock {
@@ -50,6 +60,13 @@
     border-color: #6d6d6d;
     border-width: 1px;
     border-radius: 1px;
+}
+
+.maynard-grid-item button, .maynard-grid-item button:hover {
+    border: none;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
 }
 
 .maynard-grid-label {

@@ -198,6 +198,7 @@ app_launcher_new_from_desktop_info (MaynardLauncher *self,
   /* icon button to load the app */
   icon = g_app_info_get_icon (G_APP_INFO (info));
   image = gtk_image_new_from_gicon (icon, GTK_ICON_SIZE_DIALOG);
+  gtk_image_set_pixel_size (GTK_IMAGE (image), 48);
   button = gtk_button_new ();
   gtk_style_context_remove_class (
       gtk_widget_get_style_context (button),
@@ -209,6 +210,7 @@ app_launcher_new_from_desktop_info (MaynardLauncher *self,
   g_object_set (image,
       "margin", 30,
       NULL);
+  gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
   gtk_container_add (GTK_CONTAINER (overlay), button);
 
   /* TODO: a bit ugly */

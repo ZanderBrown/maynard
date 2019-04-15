@@ -49,3 +49,4 @@ data/org.raspberrypi.maynard.gschema.valid
 data/org.raspberrypi.maynard.gschema.xml
 po/POTFILES
 po/stamp-it
+.vscode/
