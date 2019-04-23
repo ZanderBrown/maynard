@@ -34,7 +34,7 @@ struct MaynardVerticalClockPrivate {
   GnomeWallClock *wall_clock;
 };
 
-G_DEFINE_TYPE(MaynardVerticalClock, maynard_vertical_clock, GTK_TYPE_BOX)
+G_DEFINE_TYPE_WITH_PRIVATE(MaynardVerticalClock, maynard_vertical_clock, GTK_TYPE_BOX)
 
 /* this widget takes up the entire width of the panel and displays
  * padding for the first (panel width - vertical clock width) pixels,
@@ -44,9 +44,7 @@ G_DEFINE_TYPE(MaynardVerticalClock, maynard_vertical_clock, GTK_TYPE_BOX)
 static void
 maynard_vertical_clock_init (MaynardVerticalClock *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      MAYNARD_VERTICAL_CLOCK_TYPE,
-      MaynardVerticalClockPrivate);
+  self->priv = maynard_vertical_clock_get_instance_private (self);
 }
 
 static void
@@ -120,8 +118,6 @@ maynard_vertical_clock_class_init (MaynardVerticalClockClass *klass)
 
   object_class->constructed = maynard_vertical_clock_constructed;
   object_class->dispose = maynard_vertical_clock_dispose;
-
-  g_type_class_add_private (object_class, sizeof (MaynardVerticalClockPrivate));
 }
 
 GtkWidget *

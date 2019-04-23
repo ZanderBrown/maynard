@@ -39,7 +39,7 @@ struct MaynardFavoritesPrivate {
   GSettings *settings;
 };
 
-G_DEFINE_TYPE(MaynardFavorites, maynard_favorites, GTK_TYPE_BOX)
+G_DEFINE_TYPE_WITH_PRIVATE(MaynardFavorites, maynard_favorites, GTK_TYPE_BOX)
 
 static void
 favorite_clicked (GtkButton *button,
@@ -125,9 +125,7 @@ maynard_favorites_dispose (GObject *object)
 static void
 maynard_favorites_init (MaynardFavorites *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-                                            MAYNARD_TYPE_FAVORITES,
-                                            MaynardFavoritesPrivate);
+  self->priv = maynard_favorites_get_instance_private (self);
 
   self->priv->settings = g_settings_new ("org.raspberrypi.maynard");
   g_signal_connect (self->priv->settings, "changed::favorites",
@@ -147,8 +145,6 @@ maynard_favorites_class_init (MaynardFavoritesClass *klass)
   signals[APP_LAUNCHED] = g_signal_new ("app-launched",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 0);
-
-  g_type_class_add_private (object_class, sizeof (MaynardFavoritesPrivate));
 }
 
 GtkWidget *

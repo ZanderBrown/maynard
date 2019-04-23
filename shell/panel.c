@@ -49,14 +49,12 @@ struct MaynardPanelPrivate {
   gchar *volume_icon_name;
 };
 
-G_DEFINE_TYPE(MaynardPanel, maynard_panel, GTK_TYPE_WINDOW)
+G_DEFINE_TYPE_WITH_PRIVATE(MaynardPanel, maynard_panel, GTK_TYPE_WINDOW)
 
 static void
 maynard_panel_init (MaynardPanel *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      MAYNARD_PANEL_TYPE,
-      MaynardPanelPrivate);
+  self->priv = maynard_panel_get_instance_private (self);
 
   self->priv->volume_icon_name = g_strdup ("audio-volume-high-symbolic");
 }
@@ -273,8 +271,6 @@ maynard_panel_class_init (MaynardPanelClass *klass)
   signals[FAVORITE_LAUNCHED] = g_signal_new ("favorite-launched",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 0);
-
-  g_type_class_add_private (object_class, sizeof (MaynardPanelPrivate));
 }
 
 GtkWidget *

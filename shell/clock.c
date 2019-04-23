@@ -50,14 +50,12 @@ struct MaynardClockPrivate {
   glong min_volume, max_volume;
 };
 
-G_DEFINE_TYPE(MaynardClock, maynard_clock, GTK_TYPE_WINDOW)
+G_DEFINE_TYPE_WITH_PRIVATE(MaynardClock, maynard_clock, GTK_TYPE_WINDOW)
 
 static void
 maynard_clock_init (MaynardClock *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      MAYNARD_CLOCK_TYPE,
-      MaynardClockPrivate);
+  self->priv = maynard_clock_get_instance_private (self);
 }
 
 static gdouble
@@ -347,8 +345,6 @@ maynard_clock_class_init (MaynardClockClass *klass)
   signals[VOLUME_CHANGED] = g_signal_new ("volume-changed",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 2, G_TYPE_DOUBLE, G_TYPE_STRING);
-
-  g_type_class_add_private (object_class, sizeof (MaynardClockPrivate));
 }
 
 GtkWidget *

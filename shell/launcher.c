@@ -47,7 +47,7 @@ struct MaynardLauncherPrivate {
   GtkWidget *grid;
 };
 
-G_DEFINE_TYPE(MaynardLauncher, maynard_launcher, GTK_TYPE_WINDOW)
+G_DEFINE_TYPE_WITH_PRIVATE(MaynardLauncher, maynard_launcher, GTK_TYPE_WINDOW)
 
 /* each grid item is 114x114 */
 #define GRID_ITEM_WIDTH 114
@@ -56,9 +56,7 @@ G_DEFINE_TYPE(MaynardLauncher, maynard_launcher, GTK_TYPE_WINDOW)
 static void
 maynard_launcher_init (MaynardLauncher *self)
 {
-  self->priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-      MAYNARD_LAUNCHER_TYPE,
-      MaynardLauncherPrivate);
+  self->priv = maynard_launcher_get_instance_private (self);
 }
 
 static gint
@@ -371,8 +369,6 @@ maynard_launcher_class_init (MaynardLauncherClass *klass)
   signals[APP_LAUNCHED] = g_signal_new ("app-launched",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
       NULL, G_TYPE_NONE, 0);
-
-  g_type_class_add_private (object_class, sizeof (MaynardLauncherPrivate));
 }
 
 GtkWidget *

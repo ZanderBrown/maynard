@@ -23,7 +23,7 @@ struct _ShellAppSystemPrivate {
 static void shell_app_system_finalize (GObject *object);
 static void on_apps_tree_changed_cb (GMenuTree *tree, gpointer user_data);
 
-G_DEFINE_TYPE(ShellAppSystem, shell_app_system, G_TYPE_OBJECT);
+G_DEFINE_TYPE_WITH_PRIVATE(ShellAppSystem, shell_app_system, G_TYPE_OBJECT);
 
 static void shell_app_system_class_init(ShellAppSystemClass *klass)
 {
@@ -38,8 +38,6 @@ static void shell_app_system_class_init(ShellAppSystemClass *klass)
         G_STRUCT_OFFSET (ShellAppSystemClass, installed_changed),
         NULL, NULL, NULL,
         G_TYPE_NONE, 0);
-
-  g_type_class_add_private (gobject_class, sizeof (ShellAppSystemPrivate));
 }
 
 static void
@@ -47,9 +45,7 @@ shell_app_system_init (ShellAppSystem *self)
 {
   ShellAppSystemPrivate *priv;
 
-  self->priv = priv = G_TYPE_INSTANCE_GET_PRIVATE (self,
-                                                   SHELL_TYPE_APP_SYSTEM,
-                                                   ShellAppSystemPrivate);
+  self->priv = priv = shell_app_system_get_instance_private (self);
 
   priv->id_to_info = g_hash_table_new_full (g_str_hash, g_str_equal,
                                            (GDestroyNotify)g_free,
@@ -65,7 +61,7 @@ static void
 shell_app_system_finalize (GObject *object)
 {
   ShellAppSystem *self = SHELL_APP_SYSTEM (object);
-  ShellAppSystemPrivate *priv = self->priv;
+  ShellAppSystemPrivate *priv = shell_app_system_get_instance_private (self);
 
   g_object_unref (priv->apps_tree);
 
