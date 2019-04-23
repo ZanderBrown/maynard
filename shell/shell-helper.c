@@ -23,7 +23,7 @@
 #include <assert.h>
 
 #include "config.h"
-#include <libweston-5/compositor.h>
+#include <libweston-6/compositor.h>
 
 #include "shell-helper-server-protocol.h"
 

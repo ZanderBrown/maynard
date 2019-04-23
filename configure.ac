@@ -26,8 +26,8 @@ PKG_PROG_PKG_CONFIG()
 
 PKG_CHECK_MODULES([GTK], [
 	wayland-client >= 1.0.2
-	weston >= 3
-	gtk+-3.0 >= 3.10
+	weston >= 6
+	gtk+-3.0 >= 3.24
 	gtk+-wayland-3.0
 	libgnome-menu-3.0
 	gnome-desktop-3.0
@@ -35,8 +35,8 @@ PKG_CHECK_MODULES([GTK], [
 ])
 
 PKG_CHECK_MODULES([WESTON], [
-	weston >= 3
-	libweston-3
+	weston >= 6
+	libweston-6
 ])
 
 GLIB_GSETTINGS
