@@ -60,8 +60,6 @@ GType maynard_panel_get_type (void) G_GNUC_CONST;
 
 GtkWidget * maynard_panel_new (void);
 
-void maynard_panel_set_expand (MaynardPanel *self, gboolean expand);
-
 void maynard_panel_show_previous (MaynardPanel *self, MaynardPanelButton button);
 
 void maynard_panel_set_volume_icon_name (MaynardPanel *self,

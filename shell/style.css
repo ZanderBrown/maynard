@@ -43,11 +43,6 @@
     box-shadow: none;
 }
 
-.maynard-clock {
-    background-color: #929292;
-    color: white;
-}
-
 .maynard-grid {
     background-color: alpha(black, 0.6);
 }
@@ -71,4 +66,12 @@
 
 .maynard-grid-label {
     background-color: #929292;
+}
+
+popover {
+    background: black;
+    color: white;
+    border: 1px solid gray;
+    border-radius: 0;
+    padding: 10px;
 }

@@ -9,6 +9,8 @@ maynard_SOURCES =				\
 	app-icon.h				\
 	clock.c					\
 	clock.h					\
+	sound.c					\
+	sound.h					\
 	favorites.c				\
 	favorites.h				\
 	shell-app-system.c			\

@@ -34,11 +34,9 @@
 #include "maynard-resources.h"
 
 #include "app-icon.h"
-#include "clock.h"
 #include "favorites.h"
 #include "launcher.h"
 #include "panel.h"
-#include "vertical-clock.h"
 
 extern char **environ; /* defined by libc */
 
@@ -64,7 +62,6 @@ struct desktop {
   struct element *panel;
   struct element *curtain;
   struct element *launcher_grid;
-  struct element *clock;
 
   guint initial_panel_timeout_id;
   guint hide_panel_idle_id;
@@ -77,8 +74,6 @@ struct desktop {
 
 static gboolean panel_window_enter_cb (GtkWidget *widget,
     GdkEventCrossing *event, struct desktop *desktop);
-static gboolean panel_window_leave_cb (GtkWidget *widget,
-    GdkEventCrossing *event, struct desktop *desktop);
 
 static gboolean
 connect_enter_leave_signals (gpointer data)
@@ -88,18 +83,9 @@ connect_enter_leave_signals (gpointer data)
 
   g_signal_connect (desktop->panel->window, "enter-notify-event",
       G_CALLBACK (panel_window_enter_cb), desktop);
-  g_signal_connect (desktop->panel->window, "leave-notify-event",
-      G_CALLBACK (panel_window_leave_cb), desktop);
-
-  g_signal_connect (desktop->clock->window, "enter-notify-event",
-      G_CALLBACK (panel_window_enter_cb), desktop);
-  g_signal_connect (desktop->clock->window, "leave-notify-event",
-      G_CALLBACK (panel_window_leave_cb), desktop);
 
   g_signal_connect (desktop->launcher_grid->window, "enter-notify-event",
       G_CALLBACK (panel_window_enter_cb), desktop);
-  g_signal_connect (desktop->launcher_grid->window, "leave-notify-event",
-      G_CALLBACK (panel_window_leave_cb), desktop);
 
   return G_SOURCE_REMOVE;
 }
@@ -119,7 +105,7 @@ shell_configure (struct desktop *desktop,
   /* TODO: make this height a little nicer */
   window_height = height * MAYNARD_PANEL_HEIGHT_RATIO;
   gtk_window_resize (GTK_WINDOW (desktop->panel->window),
-      MAYNARD_PANEL_WIDTH, window_height);
+      width, MAYNARD_PANEL_WIDTH);
 
   maynard_launcher_calculate (MAYNARD_LAUNCHER (desktop->launcher_grid->window),
       &grid_width, &grid_height, NULL);
@@ -127,18 +113,12 @@ shell_configure (struct desktop *desktop,
       grid_width, grid_height);
 
   shell_helper_move_surface (desktop->helper, desktop->panel->surface,
-      0, (height - window_height) / 2);
-
-  gtk_window_resize (GTK_WINDOW (desktop->clock->window),
-      MAYNARD_CLOCK_WIDTH, MAYNARD_CLOCK_HEIGHT);
-
-  shell_helper_move_surface (desktop->helper, desktop->clock->surface,
-      MAYNARD_PANEL_WIDTH, (height - window_height) / 2);
+      0, 0);
 
   shell_helper_move_surface (desktop->helper,
       desktop->launcher_grid->surface,
       - grid_width,
-      ((height - window_height) / 2) + MAYNARD_CLOCK_HEIGHT);
+      ((height - window_height) / 2));
 
   weston_desktop_shell_desktop_ready (desktop->wshell);
 
@@ -232,91 +212,6 @@ launcher_grid_create (struct desktop *desktop)
   desktop->launcher_grid = launcher_grid;
 }
 
-static void
-volume_changed_cb (MaynardClock *clock,
-    gdouble value,
-    const gchar *icon_name,
-    struct desktop *desktop)
-{
-  maynard_panel_set_volume_icon_name (
-      MAYNARD_PANEL (desktop->panel->window), icon_name);
-}
-
-static GtkWidget *
-clock_create (struct desktop *desktop)
-{
-  struct element *clock;
-  GdkWindow *gdk_window;
-
-  clock = malloc (sizeof *clock);
-  memset (clock, 0, sizeof *clock);
-
-  clock->window = maynard_clock_new ();
-
-  g_signal_connect (clock->window, "volume-changed",
-      G_CALLBACK (volume_changed_cb), desktop);
-
-  gdk_window = gtk_widget_get_window (clock->window);
-  clock->surface = gdk_wayland_window_get_wl_surface (gdk_window);
-
-  gdk_wayland_window_set_use_custom_surface (gdk_window);
-  shell_helper_add_surface_to_layer (desktop->helper, clock->surface,
-      desktop->panel->surface);
-
-  gtk_widget_show_all (clock->window);
-
-  desktop->clock = clock;
-}
-
-static void
-button_toggled_cb (struct desktop *desktop,
-    gboolean *visible,
-    gboolean *not_visible)
-{
-  *visible = !*visible;
-  *not_visible = FALSE;
-
-  if (desktop->system_visible)
-    {
-      maynard_clock_show_section (MAYNARD_CLOCK (desktop->clock->window),
-          MAYNARD_CLOCK_SECTION_SYSTEM);
-      maynard_panel_show_previous (MAYNARD_PANEL (desktop->panel->window),
-          MAYNARD_PANEL_BUTTON_SYSTEM);
-    }
-  else if (desktop->volume_visible)
-    {
-      maynard_clock_show_section (MAYNARD_CLOCK (desktop->clock->window),
-          MAYNARD_CLOCK_SECTION_VOLUME);
-      maynard_panel_show_previous (MAYNARD_PANEL (desktop->panel->window),
-          MAYNARD_PANEL_BUTTON_VOLUME);
-    }
-  else
-    {
-      maynard_clock_show_section (MAYNARD_CLOCK (desktop->clock->window),
-          MAYNARD_CLOCK_SECTION_CLOCK);
-      maynard_panel_show_previous (MAYNARD_PANEL (desktop->panel->window),
-          MAYNARD_PANEL_BUTTON_NONE);
-    }
-}
-
-static void
-system_toggled_cb (GtkWidget *widget,
-    struct desktop *desktop)
-{
-  button_toggled_cb (desktop,
-      &desktop->system_visible,
-      &desktop->volume_visible);
-}
-
-static void
-volume_toggled_cb (GtkWidget *widget,
-    struct desktop *desktop)
-{
-  button_toggled_cb (desktop,
-      &desktop->volume_visible,
-      &desktop->system_visible);
-}
-
 static gboolean
 panel_window_enter_cb (GtkWidget *widget,
     GdkEventCrossing *event,
@@ -341,13 +236,6 @@ panel_window_enter_cb (GtkWidget *widget,
       return FALSE;
     }
 
-  shell_helper_slide_surface_back (desktop->helper,
-      desktop->panel->surface);
-  shell_helper_slide_surface_back (desktop->helper,
-      desktop->clock->surface);
-
-  maynard_panel_set_expand (MAYNARD_PANEL (desktop->panel->window), TRUE);
-
   return FALSE;
 }
 
@@ -355,64 +243,12 @@ static gboolean
 leave_panel_idle_cb (gpointer data)
 {
   struct desktop *desktop = data;
-  gint width;
 
   desktop->hide_panel_idle_id = 0;
 
-  gtk_window_get_size (GTK_WINDOW (desktop->clock->window),
-      &width, NULL);
-
-  shell_helper_slide_surface (desktop->helper,
-      desktop->panel->surface,
-      MAYNARD_VERTICAL_CLOCK_WIDTH - MAYNARD_PANEL_WIDTH, 0);
-  shell_helper_slide_surface (desktop->helper,
-      desktop->clock->surface,
-      MAYNARD_VERTICAL_CLOCK_WIDTH - MAYNARD_PANEL_WIDTH - width, 0);
-
-  maynard_panel_set_expand (MAYNARD_PANEL (desktop->panel->window), FALSE);
-
-  maynard_clock_show_section (MAYNARD_CLOCK (desktop->clock->window),
-      MAYNARD_CLOCK_SECTION_CLOCK);
-  maynard_panel_show_previous (MAYNARD_PANEL (desktop->panel->window),
-      MAYNARD_PANEL_BUTTON_NONE);
   desktop->system_visible = FALSE;
   desktop->volume_visible = FALSE;
   desktop->pointer_out_of_panel = FALSE;
-
-  return G_SOURCE_REMOVE;
-}
-
-static gboolean
-panel_window_leave_cb (GtkWidget *widget,
-    GdkEventCrossing *event,
-    struct desktop *desktop)
-{
-  if (desktop->initial_panel_timeout_id > 0)
-    {
-      g_source_remove (desktop->initial_panel_timeout_id);
-      desktop->initial_panel_timeout_id = 0;
-    }
-
-  if (desktop->hide_panel_idle_id > 0)
-    return FALSE;
-
-  if (desktop->grid_visible)
-    {
-      desktop->pointer_out_of_panel = TRUE;
-      return FALSE;
-    }
-
-  desktop->hide_panel_idle_id = g_idle_add (leave_panel_idle_cb, desktop);
-
-  return FALSE;
-}
-
-static gboolean
-panel_hide_timeout_cb (gpointer data)
-{
-  struct desktop *desktop = data;
-
-  panel_window_leave_cb (NULL, NULL, desktop);
 
   return G_SOURCE_REMOVE;
 }
@@ -423,8 +259,6 @@ favorite_launched_cb (MaynardPanel *panel,
 {
   if (desktop->grid_visible)
     launcher_grid_toggle (desktop->launcher_grid->window, desktop);
-
-  panel_window_leave_cb (NULL, NULL, desktop);
 }
 
 static void
@@ -437,18 +271,12 @@ panel_create (struct desktop *desktop)
   memset (panel, 0, sizeof *panel);
 
   panel->window = maynard_panel_new ();
+  gtk_window_set_interactive_debugging (TRUE);
 
   g_signal_connect (panel->window, "app-menu-toggled",
       G_CALLBACK (launcher_grid_toggle), desktop);
-  g_signal_connect (panel->window, "system-toggled",
-      G_CALLBACK (system_toggled_cb), desktop);
-  g_signal_connect (panel->window, "volume-toggled",
-      G_CALLBACK (volume_toggled_cb), desktop);
   g_signal_connect (panel->window, "favorite-launched",
       G_CALLBACK (favorite_launched_cb), desktop);
-
-  desktop->initial_panel_timeout_id =
-    g_timeout_add_seconds (2, panel_hide_timeout_cb, desktop);
 
   /* set it up as the panel */
   gdk_window = gtk_widget_get_window (panel->window);
@@ -460,7 +288,7 @@ panel_create (struct desktop *desktop)
   weston_desktop_shell_set_panel (desktop->wshell, desktop->output,
       panel->surface);
   weston_desktop_shell_set_panel_position (desktop->wshell,
-     WESTON_DESKTOP_SHELL_PANEL_POSITION_LEFT);
+     WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP);
 
   shell_helper_set_panel (desktop->helper, panel->surface);
 
@@ -665,18 +493,6 @@ pointer_handle_button (void *data,
     uint32_t button,
     uint32_t state_w)
 {
-  struct desktop *desktop = data;
-
-  if (state_w != WL_POINTER_BUTTON_STATE_RELEASED)
-    return;
-
-  if (!desktop->pointer_out_of_panel)
-    return;
-
-  if (desktop->grid_visible)
-    launcher_grid_toggle (desktop->launcher_grid->window, desktop);
-
-  panel_window_leave_cb (NULL, NULL, desktop);
 }
 
 static void
@@ -862,7 +678,6 @@ main (int argc,
   /* panel needs to be first so the clock and launcher grid can
    * be added to its layer */
   panel_create (desktop);
-  clock_create (desktop);
   launcher_grid_create (desktop);
   grab_surface_create (desktop);
 

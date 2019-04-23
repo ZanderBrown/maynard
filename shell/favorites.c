@@ -151,6 +151,7 @@ GtkWidget *
 maynard_favorites_new (void)
 {
   return g_object_new (MAYNARD_TYPE_FAVORITES,
-      "orientation", GTK_ORIENTATION_VERTICAL,
+      "orientation", GTK_ORIENTATION_HORIZONTAL,
+      "halign", GTK_ALIGN_START,
       NULL);
 }

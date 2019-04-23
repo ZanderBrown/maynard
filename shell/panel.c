@@ -25,6 +25,8 @@
 
 #include "app-icon.h"
 #include "favorites.h"
+#include "clock.h"
+#include "sound.h"
 #include "vertical-clock.h"
 
 enum {
@@ -38,9 +40,6 @@ static guint signals[N_SIGNALS] = { 0 };
 
 struct MaynardPanelPrivate {
   gboolean hidden;
-
-  GtkWidget *revealer_buttons; /* for the top buttons */
-  GtkWidget *revealer_clock; /* for the vertical clock */
 
   GtkWidget *system_button;
 
@@ -70,32 +69,10 @@ widget_enter_notify_event_cb (GtkWidget *widget,
 }
 
 static void
-widget_connect_enter_signal (MaynardPanel *self,
-    GtkWidget *widget)
-{
-  g_signal_connect (widget, "enter-notify-event",
-      G_CALLBACK (widget_enter_notify_event_cb), self);
-}
-
-static void
 app_menu_button_clicked_cb (GtkButton *button,
     MaynardPanel *self)
 {
   g_signal_emit (self, signals[APP_MENU_TOGGLED], 0);
-}
-
-static void
-system_button_clicked_cb (GtkButton *button,
-    MaynardPanel *self)
-{
-  g_signal_emit (self, signals[SYSTEM_TOGGLED], 0);
-}
-
-static void
-volume_button_clicked_cb (GtkButton *button,
-    MaynardPanel *self)
-{
-  g_signal_emit (self, signals[VOLUME_TOGGLED], 0);
 }
 
 static void
@@ -110,10 +87,10 @@ maynard_panel_constructed (GObject *object)
 {
   MaynardPanel *self = MAYNARD_PANEL (object);
   GtkWidget *main_box, *menu_box, *buttons_box;
-  GtkWidget *ebox;
   GtkWidget *image;
   GtkWidget *button;
   GtkWidget *favorites;
+  GtkWidget *widget;
 
   G_OBJECT_CLASS (maynard_panel_parent_class)->constructed (object);
 
@@ -128,7 +105,7 @@ maynard_panel_constructed (GObject *object)
       "maynard-panel");
 
   /* main vbox */
-  main_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
+  main_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_add (GTK_CONTAINER (self), main_box);
 
   /* for the top buttons and vertical clock we have a few more
@@ -141,95 +118,64 @@ maynard_panel_constructed (GObject *object)
    * clock widget.
    */
 
-  /* GtkBoxes seem to eat up enter/leave events, so let's use an event
-   * box for the entire thing. */
-  ebox = gtk_event_box_new ();
-  gtk_box_pack_start (GTK_BOX (main_box), ebox, FALSE, FALSE, 0);
-  widget_connect_enter_signal (self, ebox);
+  /* bottom app menu button */
+  button = maynard_app_icon_new ("view-grid-symbolic");
+  g_signal_connect (button, "clicked",
+      G_CALLBACK (app_menu_button_clicked_cb), self);
+  gtk_container_add (GTK_CONTAINER (main_box), button);
+
+  /* favorites */
+  favorites = maynard_favorites_new ();
+  gtk_container_add (GTK_CONTAINER (main_box), favorites);
+  gtk_widget_set_hexpand (favorites, TRUE);
+
+  g_signal_connect (favorites, "app-launched",
+      G_CALLBACK (favorite_launched_cb), self);
 
   menu_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
-  gtk_container_add (GTK_CONTAINER (ebox), menu_box);
-
-  /* revealer for the top buttons */
-  self->priv->revealer_buttons = gtk_revealer_new ();
-  gtk_revealer_set_transition_type (GTK_REVEALER (self->priv->revealer_buttons),
-      GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT);
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->priv->revealer_buttons),
-      TRUE);
-  gtk_box_pack_start (GTK_BOX (menu_box),
-      self->priv->revealer_buttons, FALSE, FALSE, 0);
+  gtk_container_add (GTK_CONTAINER (main_box), menu_box);
 
   /* the box for the top buttons */
-  buttons_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
-  gtk_container_add (GTK_CONTAINER (self->priv->revealer_buttons), buttons_box);
+  buttons_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  gtk_container_add (GTK_CONTAINER (main_box), buttons_box);
+
+  self->priv->volume_button = gtk_menu_button_new ();
+  gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->volume_button),
+      "maynard-audio");
+  gtk_style_context_remove_class (gtk_widget_get_style_context (self->priv->volume_button),
+      "button");
+  gtk_style_context_remove_class (gtk_widget_get_style_context (self->priv->volume_button),
+      "image-button");
+  gtk_container_add (GTK_CONTAINER (buttons_box), self->priv->volume_button);
+  gtk_widget_show (self->priv->volume_button);
+  widget = gtk_popover_new (self->priv->volume_button);
+  gtk_popover_set_constrain_to (GTK_POPOVER (widget), GTK_POPOVER_CONSTRAINT_NONE);
+  gtk_menu_button_set_popover (GTK_MENU_BUTTON (self->priv->volume_button), widget);
+  button = maynard_sound_new ();
+  gtk_widget_show_all (button);
+  gtk_container_add (GTK_CONTAINER (widget), button);
 
   /* system button */
-  ebox = gtk_event_box_new ();
-  gtk_box_pack_start (GTK_BOX (buttons_box), ebox, FALSE, FALSE, 0);
-  button = gtk_button_new_from_icon_name ("emblem-system-symbolic",
-      GTK_ICON_SIZE_LARGE_TOOLBAR);
+  button = gtk_menu_button_new ();
   gtk_style_context_add_class (gtk_widget_get_style_context (button),
       "maynard-system");
   gtk_style_context_remove_class (gtk_widget_get_style_context (button),
       "button");
   gtk_style_context_remove_class (gtk_widget_get_style_context (button),
       "image-button");
-  g_signal_connect (button, "clicked",
-      G_CALLBACK (system_button_clicked_cb), self);
-  gtk_container_add (GTK_CONTAINER (ebox), button);
-  widget_connect_enter_signal (self, ebox);
+  gtk_container_add (GTK_CONTAINER (buttons_box), button);
   self->priv->system_button = button;
-
-  /* sound button */
-  ebox = gtk_event_box_new ();
-  gtk_box_pack_start (GTK_BOX (buttons_box), ebox, FALSE, FALSE, 0);
-  button = gtk_button_new_from_icon_name (self->priv->volume_icon_name,
-      GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_style_context_add_class (gtk_widget_get_style_context (button),
-      "maynard-audio");
-  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
-      "button");
-  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
-      "image-button");
-  g_signal_connect (button, "clicked",
-      G_CALLBACK (volume_button_clicked_cb), self);
-  gtk_container_add (GTK_CONTAINER (ebox), button);
-  widget_connect_enter_signal (self, ebox);
-  self->priv->volume_button = button;
-
-  /* revealer for the vertical clock */
-  self->priv->revealer_clock = gtk_revealer_new ();
-  gtk_revealer_set_transition_type (GTK_REVEALER (self->priv->revealer_clock),
-      GTK_REVEALER_TRANSITION_TYPE_SLIDE_RIGHT);
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->priv->revealer_clock),
-      FALSE);
-  gtk_box_pack_start (GTK_BOX (menu_box),
-      self->priv->revealer_clock, FALSE, FALSE, 0);
-
-  /* vertical clock */
-  gtk_container_add (GTK_CONTAINER (self->priv->revealer_clock),
-      maynard_vertical_clock_new ());
+  widget = gtk_popover_new (button);
+  gtk_popover_set_constrain_to (GTK_POPOVER (widget), GTK_POPOVER_CONSTRAINT_NONE);
+  gtk_menu_button_set_popover (GTK_MENU_BUTTON (button), widget);
+  button = maynard_clock_new ();
+  gtk_widget_show_all (button);
+  gtk_container_add (GTK_CONTAINER (widget), button);
+  button = maynard_vertical_clock_new ();
+  gtk_widget_show_all (button);
+  gtk_container_add (GTK_CONTAINER (self->priv->system_button), button);
 
   /* end of the menu buttons and vertical clock */
-
-  /* favorites */
-  ebox = gtk_event_box_new ();
-  gtk_box_pack_start (GTK_BOX (main_box), ebox, FALSE, FALSE, 0);
-  favorites = maynard_favorites_new ();
-  gtk_container_add (GTK_CONTAINER (ebox), favorites);
-  widget_connect_enter_signal (self, ebox);
-
-  g_signal_connect (favorites, "app-launched",
-      G_CALLBACK (favorite_launched_cb), self);
-
-  /* bottom app menu button */
-  ebox = gtk_event_box_new ();
-  gtk_box_pack_end (GTK_BOX (main_box), ebox, FALSE, FALSE, 0);
-  button = maynard_app_icon_new ("view-grid-symbolic");
-  g_signal_connect (button, "clicked",
-      G_CALLBACK (app_menu_button_clicked_cb), self);
-  gtk_container_add (GTK_CONTAINER (ebox), button);
-  widget_connect_enter_signal (self, ebox);
 
   /* done */
   self->priv->hidden = FALSE;
@@ -280,14 +226,6 @@ maynard_panel_new (void)
       NULL);
 }
 
-void
-maynard_panel_set_expand (MaynardPanel *self,
-    gboolean expand)
-{
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->priv->revealer_buttons), expand);
-  gtk_revealer_set_reveal_child (GTK_REVEALER (self->priv->revealer_clock), !expand);
-}
-
 static void
 set_icon (GtkWidget *button,
     const gchar *icon_name)
@@ -301,36 +239,11 @@ set_icon (GtkWidget *button,
 }
 
 void
-maynard_panel_show_previous (MaynardPanel *self,
-    MaynardPanelButton button)
-{
-  switch (button)
-    {
-    case MAYNARD_PANEL_BUTTON_SYSTEM:
-      set_icon (self->priv->system_button, "go-previous-symbolic");
-      set_icon (self->priv->volume_button, self->priv->volume_icon_name);
-      self->priv->volume_showing = FALSE;
-      break;
-    case MAYNARD_PANEL_BUTTON_VOLUME:
-      set_icon (self->priv->system_button, "emblem-system-symbolic");
-      set_icon (self->priv->volume_button, "go-previous-symbolic");
-      self->priv->volume_showing = TRUE;
-      break;
-    case MAYNARD_PANEL_BUTTON_NONE:
-    default:
-      set_icon (self->priv->system_button, "emblem-system-symbolic");
-      set_icon (self->priv->volume_button, self->priv->volume_icon_name);
-      self->priv->volume_showing = FALSE;
-    }
-}
-
-void
 maynard_panel_set_volume_icon_name (MaynardPanel *self,
     const gchar *icon_name)
 {
   g_free (self->priv->volume_icon_name);
   self->priv->volume_icon_name = g_strdup (icon_name);
 
-  if (!self->priv->volume_showing)
-    set_icon (self->priv->volume_button, icon_name);
+  set_icon (self->priv->volume_button, icon_name);
 }
