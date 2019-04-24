@@ -2,19 +2,6 @@
     background-color: alpha(black, 0.7);
 }
 
-.maynard-system, .maynard-system:hover, .maynard-audio, .maynard-audio:hover {
-    color: white;
-    background: transparent;
-    border: none;
-    border-radius: 0;
-    box-shadow: none;
-}
-
-.maynard-system:hover, .maynard-audio:hover {
-    background: black;
-    color: white;
-}
-
 .maynard-apps {
     color: #bebebe;
     border-radius: 0;
@@ -64,5 +51,6 @@ panel-button {
 }
 
 panel-button:hover {
+    color: white;
     background: black;
 }

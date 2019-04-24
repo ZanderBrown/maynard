@@ -10,7 +10,7 @@ struct _MndPowerPrivate {
 };
 typedef struct _MndPowerPrivate MndPowerPrivate;
 
-G_DEFINE_TYPE_WITH_PRIVATE (MndPower, mnd_power, GTK_TYPE_MENU_BUTTON)
+G_DEFINE_TYPE_WITH_PRIVATE (MndPower, mnd_power, MND_TYPE_PANEL_BUTTON)
 
 static void
 mnd_power_update_percent (MndPower *self)
@@ -83,11 +83,8 @@ static void
 mnd_power_class_init (MndPowerClass *klass)
 {
   GObjectClass   *object_class = G_OBJECT_CLASS (klass);
-  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
   object_class->dispose = mnd_power_dispose;
-
-  gtk_widget_class_set_css_name (widget_class, "panel-button");
 }
 
 GtkWidget *

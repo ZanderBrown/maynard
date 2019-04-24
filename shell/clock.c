@@ -94,10 +94,6 @@ maynard_clock_constructed (GObject *object)
   gtk_container_add (GTK_CONTAINER (self->priv->revealer_clock),
       self->priv->label);
 
-  /* TODO: work out how to fix the padding properly. this is added to
-   * fix the broken alignment where the clock appears to the right. */
-  gtk_box_pack_start (GTK_BOX (box), gtk_revealer_new (), TRUE, TRUE, 0);
-
   wall_clock_notify_cb (self->priv->wall_clock, NULL, self);
 }
 

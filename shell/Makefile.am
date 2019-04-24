@@ -7,6 +7,8 @@ maynard_SOURCES =				\
 	maynard.c				\
 	app-icon.c				\
 	app-icon.h				\
+	items/mnd-panel-button.c	\
+	items/mnd-panel-button.h	\
 	clock.c					\
 	clock.h					\
 	sound.c					\
@@ -60,7 +62,7 @@ mod-%-protocol.c : $(wayland_protocoldir)/%.xml
 	$(AM_V_GEN)$(wayland_scanner) code < $< > $@
 
 shell_helper_la_LDFLAGS = -module -avoid-version
-shell_helper_la_LIBADD = $(GTK_LIBS)
+shell_helper_la_LIBADD = $(GTK_LIBS) $(WESTON_LIBS)
 shell_helper_la_SOURCES =				\
 	shell-helper.c
 nodist_shell_helper_la_SOURCES =			\

@@ -31,6 +31,8 @@
 #include "sound.h"
 #include "vertical-clock.h"
 
+#include "items/mnd-panel-button.h"
+
 enum {
   APP_MENU_TOGGLED,
   SYSTEM_TOGGLED,
@@ -160,16 +162,10 @@ maynard_panel_constructed (GObject *object)
   gtk_widget_show (button);
   gtk_container_add (GTK_CONTAINER (buttons_box), button);
 
-  self->priv->volume_button = gtk_menu_button_new ();
+  self->priv->volume_button = mnd_panel_button_new ();
   widget = gtk_image_new_from_icon_name ("audio-volume-muted-symbolic", GTK_ICON_SIZE_BUTTON);
   gtk_image_set_pixel_size (GTK_IMAGE (widget), 16);
   gtk_button_set_image (GTK_BUTTON (self->priv->volume_button), widget);
-  gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->volume_button),
-      "maynard-audio");
-  gtk_style_context_remove_class (gtk_widget_get_style_context (self->priv->volume_button),
-      "button");
-  gtk_style_context_remove_class (gtk_widget_get_style_context (self->priv->volume_button),
-      "image-button");
   gtk_container_add (GTK_CONTAINER (buttons_box), self->priv->volume_button);
   gtk_widget_show (self->priv->volume_button);
   widget = gtk_popover_new (self->priv->volume_button);
@@ -180,13 +176,7 @@ maynard_panel_constructed (GObject *object)
   gtk_container_add (GTK_CONTAINER (widget), button);
 
   /* system button */
-  button = gtk_menu_button_new ();
-  gtk_style_context_add_class (gtk_widget_get_style_context (button),
-      "maynard-system");
-  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
-      "button");
-  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
-      "image-button");
+  button = mnd_panel_button_new ();
   gtk_container_add (GTK_CONTAINER (buttons_box), button);
   self->priv->system_button = button;
   widget = gtk_popover_new (button);

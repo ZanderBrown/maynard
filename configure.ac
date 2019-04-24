@@ -29,6 +29,7 @@ PKG_CHECK_MODULES([GTK], [
 	weston >= 6
 	gtk+-3.0 >= 3.24
 	gtk+-wayland-3.0
+	glib-2.0
 	libgnome-menu-3.0
 	gnome-desktop-3.0
 	alsa
@@ -38,6 +39,7 @@ PKG_CHECK_MODULES([GTK], [
 PKG_CHECK_MODULES([WESTON], [
 	weston >= 6
 	libweston-6
+	libweston-desktop-6
 ])
 
 GLIB_GSETTINGS
