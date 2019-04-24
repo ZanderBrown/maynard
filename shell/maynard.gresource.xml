@@ -2,5 +2,6 @@
 <gresources>
   <gresource prefix="/org/raspberry-pi/maynard">
     <file compressed="true">style.css</file>
+    <file compressed="true">wallpaper.jpg</file>
   </gresource>
 </gresources>

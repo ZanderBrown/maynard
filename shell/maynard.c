@@ -272,7 +272,6 @@ background_create (struct desktop *desktop)
   struct element *background;
   const gchar *filename;
   GdkPixbuf *unscaled_background;
-  const gchar *xpm_data[] = {"1 1 1 1", "_ c SteelBlue", "_"};
 
   background = malloc (sizeof *background);
   memset (background, 0, sizeof *background);
@@ -281,7 +280,7 @@ background_create (struct desktop *desktop)
   if (filename && filename[0] != '\0')
     unscaled_background = gdk_pixbuf_new_from_file (filename, NULL);
   else
-    unscaled_background = gdk_pixbuf_new_from_xpm_data (xpm_data);
+    unscaled_background = gdk_pixbuf_new_from_resource ("/org/raspberry-pi/maynard/wallpaper.jpg", NULL);
 
   if (!unscaled_background)
     {
