@@ -32,6 +32,7 @@ PKG_CHECK_MODULES([GTK], [
 	libgnome-menu-3.0
 	gnome-desktop-3.0
 	alsa
+	upower-glib
 ])
 
 PKG_CHECK_MODULES([WESTON], [

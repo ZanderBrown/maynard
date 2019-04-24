@@ -53,8 +53,8 @@ maynard_app_icon_new (const gchar *icon_name)
   GtkWidget *widget;
   GtkWidget *image;
 
-  image = gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_image_set_pixel_size (GTK_IMAGE (image), 24);
+  image = gtk_image_new_from_icon_name (icon_name, GTK_ICON_SIZE_BUTTON);
+  gtk_image_set_pixel_size (GTK_IMAGE (image), 16);
 
   widget = g_object_new (MAYNARD_APP_ICON_TYPE,
       "image", image,
@@ -68,8 +68,8 @@ maynard_app_icon_new_from_gicon (GIcon *icon)
 {
   GtkWidget *widget, *image;
 
-  image = gtk_image_new_from_gicon (icon, GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_image_set_pixel_size (GTK_IMAGE (image), 24);
+  image = gtk_image_new_from_gicon (icon, GTK_ICON_SIZE_BUTTON);
+  gtk_image_set_pixel_size (GTK_IMAGE (image), 16);
 
   widget = g_object_new (MAYNARD_APP_ICON_TYPE,
       "image", image,

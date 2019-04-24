@@ -11,6 +11,8 @@ maynard_SOURCES =				\
 	clock.h					\
 	sound.c					\
 	sound.h					\
+	power.c					\
+	power.h					\
 	favorites.c				\
 	favorites.h				\
 	shell-app-system.c			\

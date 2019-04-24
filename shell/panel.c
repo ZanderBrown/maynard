@@ -27,6 +27,7 @@
 #include "favorites.h"
 #include "launcher.h"
 #include "clock.h"
+#include "power.h"
 #include "sound.h"
 #include "vertical-clock.h"
 
@@ -123,8 +124,8 @@ maynard_panel_constructed (GObject *object)
   /* bottom app menu button */
   button = gtk_menu_button_new ();
   gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
-  widget = gtk_image_new_from_icon_name ("view-grid-symbolic", GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_image_set_pixel_size (GTK_IMAGE (widget), 24);
+  widget = gtk_image_new_from_icon_name ("view-grid-symbolic", GTK_ICON_SIZE_BUTTON);
+  gtk_image_set_pixel_size (GTK_IMAGE (widget), 16);
   gtk_button_set_image (GTK_BUTTON (button), widget);
   gtk_style_context_add_class (gtk_widget_get_style_context (button),
       "maynard-apps");
@@ -154,7 +155,15 @@ maynard_panel_constructed (GObject *object)
   buttons_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_add (GTK_CONTAINER (main_box), buttons_box);
 
+  /* Power status */
+  button = mnd_power_new ();
+  gtk_widget_show (button);
+  gtk_container_add (GTK_CONTAINER (buttons_box), button);
+
   self->priv->volume_button = gtk_menu_button_new ();
+  widget = gtk_image_new_from_icon_name ("audio-volume-muted-symbolic", GTK_ICON_SIZE_BUTTON);
+  gtk_image_set_pixel_size (GTK_IMAGE (widget), 16);
+  gtk_button_set_image (GTK_BUTTON (self->priv->volume_button), widget);
   gtk_style_context_add_class (gtk_widget_get_style_context (self->priv->volume_button),
       "maynard-audio");
   gtk_style_context_remove_class (gtk_widget_get_style_context (self->priv->volume_button),
@@ -239,26 +248,4 @@ maynard_panel_new (void)
 {
   return g_object_new (MAYNARD_PANEL_TYPE,
       NULL);
-}
-
-static void
-set_icon (GtkWidget *button,
-    const gchar *icon_name)
-{
-  GtkWidget *image;
-
-  image = gtk_image_new_from_icon_name (icon_name,
-      GTK_ICON_SIZE_LARGE_TOOLBAR);
-  gtk_button_set_image (GTK_BUTTON (button),
-      image);
-}
-
-void
-maynard_panel_set_volume_icon_name (MaynardPanel *self,
-    const gchar *icon_name)
-{
-  g_free (self->priv->volume_icon_name);
-  self->priv->volume_icon_name = g_strdup (icon_name);
-
-  set_icon (self->priv->volume_button, icon_name);
 }
