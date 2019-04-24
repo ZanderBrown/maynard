@@ -47,9 +47,6 @@ struct MaynardPanelClass
   GtkWindowClass parent_class;
 };
 
-#define MAYNARD_PANEL_WIDTH 56
-#define MAYNARD_PANEL_HEIGHT_RATIO 0.73
-
 typedef enum {
   MAYNARD_PANEL_BUTTON_NONE,
   MAYNARD_PANEL_BUTTON_SYSTEM,

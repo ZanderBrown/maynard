@@ -25,6 +25,7 @@
 
 #include "app-icon.h"
 #include "favorites.h"
+#include "launcher.h"
 #include "clock.h"
 #include "sound.h"
 #include "vertical-clock.h"
@@ -91,6 +92,7 @@ maynard_panel_constructed (GObject *object)
   GtkWidget *button;
   GtkWidget *favorites;
   GtkWidget *widget;
+  GtkWidget *popover;
 
   G_OBJECT_CLASS (maynard_panel_parent_class)->constructed (object);
 
@@ -119,9 +121,22 @@ maynard_panel_constructed (GObject *object)
    */
 
   /* bottom app menu button */
-  button = maynard_app_icon_new ("view-grid-symbolic");
-  g_signal_connect (button, "clicked",
-      G_CALLBACK (app_menu_button_clicked_cb), self);
+  button = gtk_menu_button_new ();
+  gtk_button_set_relief (GTK_BUTTON (button), GTK_RELIEF_NONE);
+  widget = gtk_image_new_from_icon_name ("view-grid-symbolic", GTK_ICON_SIZE_LARGE_TOOLBAR);
+  gtk_image_set_pixel_size (GTK_IMAGE (widget), 24);
+  gtk_button_set_image (GTK_BUTTON (button), widget);
+  gtk_style_context_add_class (gtk_widget_get_style_context (button),
+      "maynard-apps");
+  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
+      "button");
+  gtk_style_context_remove_class (gtk_widget_get_style_context (button),
+      "image-button");
+  popover = maynard_launcher_new (button);
+  gtk_popover_set_constrain_to (GTK_POPOVER (popover), GTK_POPOVER_CONSTRAINT_NONE);
+  gtk_menu_button_set_popover (GTK_MENU_BUTTON (button), popover);
+  //g_signal_connect (button, "clicked",
+  //    G_CALLBACK (app_menu_button_clicked_cb), self);
   gtk_container_add (GTK_CONTAINER (main_box), button);
 
   /* favorites */

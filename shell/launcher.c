@@ -29,25 +29,18 @@
 #include "shell-app-system.h"
 
 enum {
-  PROP_0,
-  PROP_BACKGROUND,
-};
-
-enum {
   APP_LAUNCHED,
   N_SIGNALS
 };
 static guint signals[N_SIGNALS] = { 0 };
 
 struct MaynardLauncherPrivate {
-  /* background widget so we know the output size */
-  GtkWidget *background;
   ShellAppSystem *app_system;
   GtkWidget *scrolled_window;
   GtkWidget *grid;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE(MaynardLauncher, maynard_launcher, GTK_TYPE_WINDOW)
+G_DEFINE_TYPE_WITH_PRIVATE(MaynardLauncher, maynard_launcher, GTK_TYPE_POPOVER)
 
 /* each grid item is 114x114 */
 #define GRID_ITEM_WIDTH 114
@@ -126,6 +119,8 @@ clicked_cb (GtkWidget *widget,
   self = g_object_get_data (G_OBJECT (widget), "launcher");
   g_assert (self);
   g_signal_emit (self, signals[APP_LAUNCHED], 0);
+
+  gtk_popover_popdown (GTK_POPOVER (self));
 
   /* do this in an idle so it's not done so obviously onscreen */
   g_idle_add (app_launched_idle_cb, self);
@@ -241,7 +236,7 @@ installed_changed_cb (ShellAppSystem *app_system,
   values = g_hash_table_get_values (entries);
   values = g_list_sort (values, sort_apps);
 
-  maynard_launcher_calculate (self, NULL, NULL, &cols);
+  cols = 6;
   cols--; /* because we start from zero here */
 
   left = top = 0;
@@ -265,24 +260,11 @@ installed_changed_cb (ShellAppSystem *app_system,
 }
 
 static void
-background_size_allocate_cb (GtkWidget *widget,
-    GdkRectangle *allocation,
-    MaynardLauncher *self)
-{
-  installed_changed_cb (self->priv->app_system, self);
-}
-
-static void
 maynard_launcher_constructed (GObject *object)
 {
   MaynardLauncher *self = MAYNARD_LAUNCHER (object);
 
   G_OBJECT_CLASS (maynard_launcher_parent_class)->constructed (object);
-
-  /* window properties */
-  gtk_window_set_title (GTK_WINDOW (self), "maynard");
-  gtk_window_set_decorated (GTK_WINDOW (self), FALSE);
-  gtk_widget_realize (GTK_WIDGET (self));
 
   /* make it black and slightly alpha */
   gtk_style_context_add_class (
@@ -292,6 +274,9 @@ maynard_launcher_constructed (GObject *object)
   /* scroll it */
   self->priv->scrolled_window = gtk_scrolled_window_new (NULL, NULL);
   gtk_container_add (GTK_CONTAINER (self), self->priv->scrolled_window);
+  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (self->priv->scrolled_window),
+                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+  gtk_widget_show (self->priv->scrolled_window);
 
   /* main grid for apps */
   self->priv->grid = gtk_grid_new ();
@@ -303,51 +288,8 @@ maynard_launcher_constructed (GObject *object)
   g_signal_connect (self->priv->app_system, "installed-changed",
       G_CALLBACK (installed_changed_cb), self);
 
-  /* refill the grid if the background is changed */
-  g_assert (self->priv->background != NULL);
-  g_signal_connect (self->priv->background, "size-allocate",
-      G_CALLBACK (background_size_allocate_cb), self);
-
   /* now actually fill the grid */
   installed_changed_cb (self->priv->app_system, self);
-}
-
-static void
-maynard_launcher_get_property (GObject *object,
-    guint param_id,
-    GValue *value,
-    GParamSpec *pspec)
-{
-  MaynardLauncher *self = MAYNARD_LAUNCHER (object);
-
-  switch (param_id)
-    {
-      case PROP_BACKGROUND:
-        g_value_set_object (value, self->priv->background);
-        break;
-      default:
-        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
-        break;
-    }
-}
-
-static void
-maynard_launcher_set_property (GObject *object,
-    guint param_id,
-    const GValue *value,
-    GParamSpec *pspec)
-{
-  MaynardLauncher *self = MAYNARD_LAUNCHER (object);
-
-  switch (param_id)
-    {
-      case PROP_BACKGROUND:
-        self->priv->background = g_value_get_object (value);
-        break;
-      default:
-        G_OBJECT_WARN_INVALID_PROPERTY_ID (object, param_id, pspec);
-        break;
-    }
 }
 
 static void
@@ -356,15 +298,6 @@ maynard_launcher_class_init (MaynardLauncherClass *klass)
   GObjectClass *object_class = (GObjectClass *)klass;
 
   object_class->constructed = maynard_launcher_constructed;
-  object_class->get_property = maynard_launcher_get_property;
-  object_class->set_property = maynard_launcher_set_property;
-
-  g_object_class_install_property (object_class, PROP_BACKGROUND,
-      g_param_spec_object ("background",
-          "background",
-          "The #GtkWidget of the background of the output",
-          GTK_TYPE_WIDGET,
-          G_PARAM_READWRITE | G_PARAM_CONSTRUCT_ONLY | G_PARAM_STATIC_STRINGS));
 
   signals[APP_LAUNCHED] = g_signal_new ("app-launched",
       G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
@@ -375,50 +308,7 @@ GtkWidget *
 maynard_launcher_new (GtkWidget *background_widget)
 {
   return g_object_new (MAYNARD_LAUNCHER_TYPE,
-      "background", background_widget,
+      "relative-to", background_widget,
+      "height-request", 400,
       NULL);
-}
-
-void
-maynard_launcher_calculate (MaynardLauncher *self,
-    gint *grid_window_width,
-    gint *grid_window_height,
-    gint *grid_cols)
-{
-  gint output_width, output_height, panel_height;
-  gint usable_width, usable_height;
-  guint cols, rows;
-  guint num_apps;
-  guint scrollbar_width = 13;
-
-  gtk_widget_get_size_request (self->priv->background,
-      &output_width, &output_height);
-  panel_height = output_height * MAYNARD_PANEL_HEIGHT_RATIO;
-
-  usable_width = output_width - MAYNARD_PANEL_WIDTH - scrollbar_width;
-  /* don't go further down than the panel */
-  usable_height = panel_height - MAYNARD_CLOCK_HEIGHT;
-
-  /* try and fill half the screen, otherwise round down */
-  cols = (int) ((usable_width / 2.0) / GRID_ITEM_WIDTH);
-  /* try to fit as many rows as possible in the panel height we have */
-  rows = (int) (usable_height / GRID_ITEM_HEIGHT);
-
-  /* we don't need to include the scrollbar if we already have enough
-   * space for all the apps. */
-  num_apps = g_hash_table_size (
-      shell_app_system_get_entries (self->priv->app_system));
-  if ((cols * rows) >= num_apps)
-    scrollbar_width = 0;
-
-  /* done! */
-
-  if (grid_window_width)
-    *grid_window_width = (cols * GRID_ITEM_WIDTH) + scrollbar_width;
-
-  if (grid_window_height)
-    *grid_window_height = (rows * GRID_ITEM_HEIGHT);
-
-  if (grid_cols)
-    *grid_cols = cols;
 }

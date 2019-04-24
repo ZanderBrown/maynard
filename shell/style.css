@@ -4,7 +4,6 @@
 
 .maynard-system {
     background: #6d6d6d;
-    padding: 13px;
     color: #fcfcfc;
 }
 
@@ -16,7 +15,6 @@
 .maynard-audio {
     background: #b4b4b4;
     color: #fcfcfc;
-    padding: 13px;
 }
 
 .maynard-audio:hover {
@@ -43,10 +41,6 @@
     box-shadow: none;
 }
 
-.maynard-grid {
-    background-color: alpha(black, 0.6);
-}
-
 .maynard-grid-item {
     background-color: alpha(black, 0.6);
     color: white;
@@ -69,7 +63,7 @@
 }
 
 popover {
-    background: black;
+    background-color: alpha(black, 0.8);
     color: white;
     border: 1px solid gray;
     border-radius: 0;

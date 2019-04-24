@@ -35,7 +35,6 @@
 
 #include "app-icon.h"
 #include "favorites.h"
-#include "launcher.h"
 #include "panel.h"
 
 extern char **environ; /* defined by libc */
@@ -61,7 +60,6 @@ struct desktop {
   struct element *background;
   struct element *panel;
   struct element *curtain;
-  struct element *launcher_grid;
 
   guint initial_panel_timeout_id;
   guint hide_panel_idle_id;
@@ -84,9 +82,6 @@ connect_enter_leave_signals (gpointer data)
   g_signal_connect (desktop->panel->window, "enter-notify-event",
       G_CALLBACK (panel_window_enter_cb), desktop);
 
-  g_signal_connect (desktop->launcher_grid->window, "enter-notify-event",
-      G_CALLBACK (panel_window_enter_cb), desktop);
-
   return G_SOURCE_REMOVE;
 }
 
@@ -96,29 +91,14 @@ shell_configure (struct desktop *desktop,
     struct wl_surface *surface,
     int32_t width, int32_t height)
 {
-  int window_height;
-  int grid_width, grid_height;
-
   gtk_widget_set_size_request (desktop->background->window,
       width, height);
 
-  /* TODO: make this height a little nicer */
-  window_height = height * MAYNARD_PANEL_HEIGHT_RATIO;
   gtk_window_resize (GTK_WINDOW (desktop->panel->window),
-      width, MAYNARD_PANEL_WIDTH);
-
-  maynard_launcher_calculate (MAYNARD_LAUNCHER (desktop->launcher_grid->window),
-      &grid_width, &grid_height, NULL);
-  gtk_widget_set_size_request (desktop->launcher_grid->window,
-      grid_width, grid_height);
+      width, 32);
 
   shell_helper_move_surface (desktop->helper, desktop->panel->surface,
       0, 0);
-
-  shell_helper_move_surface (desktop->helper,
-      desktop->launcher_grid->surface,
-      - grid_width,
-      ((height - window_height) / 2));
 
   weston_desktop_shell_desktop_ready (desktop->wshell);
 
@@ -157,60 +137,6 @@ static const struct weston_desktop_shell_listener wshell_listener = {
   weston_desktop_shell_prepare_lock_surface,
   weston_desktop_shell_grab_cursor
 };
-
-static void
-launcher_grid_toggle (GtkWidget *widget,
-    struct desktop *desktop)
-{
-  if (desktop->grid_visible)
-    {
-      shell_helper_slide_surface_back (desktop->helper,
-          desktop->launcher_grid->surface);
-
-      shell_helper_curtain (desktop->helper, desktop->curtain->surface, 0);
-    }
-  else
-    {
-      int width;
-
-      gtk_widget_get_size_request (desktop->launcher_grid->window,
-          &width, NULL);
-
-      shell_helper_slide_surface (desktop->helper,
-          desktop->launcher_grid->surface,
-          width + MAYNARD_PANEL_WIDTH, 0);
-
-      shell_helper_curtain (desktop->helper, desktop->curtain->surface, 1);
-    }
-
-  desktop->grid_visible = !desktop->grid_visible;
-}
-
-static void
-launcher_grid_create (struct desktop *desktop)
-{
-  struct element *launcher_grid;
-  GdkWindow *gdk_window;
-
-  launcher_grid = malloc (sizeof *launcher_grid);
-  memset (launcher_grid, 0, sizeof *launcher_grid);
-
-  launcher_grid->window = maynard_launcher_new (desktop->background->window);
-  gdk_window = gtk_widget_get_window (launcher_grid->window);
-  launcher_grid->surface = gdk_wayland_window_get_wl_surface (gdk_window);
-
-  gdk_wayland_window_set_use_custom_surface (gdk_window);
-  shell_helper_add_surface_to_layer (desktop->helper,
-      launcher_grid->surface,
-      desktop->panel->surface);
-
-  g_signal_connect (launcher_grid->window, "app-launched",
-      G_CALLBACK (launcher_grid_toggle), desktop);
-
-  gtk_widget_show_all (launcher_grid->window);
-
-  desktop->launcher_grid = launcher_grid;
-}
 
 static gboolean
 panel_window_enter_cb (GtkWidget *widget,
@@ -254,14 +180,6 @@ leave_panel_idle_cb (gpointer data)
 }
 
 static void
-favorite_launched_cb (MaynardPanel *panel,
-    struct desktop *desktop)
-{
-  if (desktop->grid_visible)
-    launcher_grid_toggle (desktop->launcher_grid->window, desktop);
-}
-
-static void
 panel_create (struct desktop *desktop)
 {
   struct element *panel;
@@ -272,11 +190,6 @@ panel_create (struct desktop *desktop)
 
   panel->window = maynard_panel_new ();
   gtk_window_set_interactive_debugging (TRUE);
-
-  g_signal_connect (panel->window, "app-menu-toggled",
-      G_CALLBACK (launcher_grid_toggle), desktop);
-  g_signal_connect (panel->window, "favorite-launched",
-      G_CALLBACK (favorite_launched_cb), desktop);
 
   /* set it up as the panel */
   gdk_window = gtk_widget_get_window (panel->window);
@@ -678,7 +591,6 @@ main (int argc,
   /* panel needs to be first so the clock and launcher grid can
    * be added to its layer */
   panel_create (desktop);
-  launcher_grid_create (desktop);
   grab_surface_create (desktop);
 
   gtk_main ();

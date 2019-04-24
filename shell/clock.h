@@ -49,9 +49,6 @@ struct MaynardClockClass
   GtkBoxClass parent_class;
 };
 
-#define MAYNARD_CLOCK_WIDTH (MAYNARD_PANEL_WIDTH * 2.6)
-#define MAYNARD_CLOCK_HEIGHT (MAYNARD_PANEL_WIDTH * 2)
-
 GType maynard_clock_get_type (void) G_GNUC_CONST;
 
 GtkWidget * maynard_clock_new (void);

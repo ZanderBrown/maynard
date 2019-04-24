@@ -47,8 +47,6 @@ struct MaynardVerticalClockClass
   GtkBoxClass parent_class;
 };
 
-#define MAYNARD_VERTICAL_CLOCK_WIDTH 25
-
 GType maynard_vertical_clock_get_type (void) G_GNUC_CONST;
 
 GtkWidget * maynard_vertical_clock_new (void);

@@ -145,7 +145,7 @@ create_volume_box (MaynardSound *self)
   self->priv->volume_scale = gtk_scale_new_with_range (
       GTK_ORIENTATION_HORIZONTAL, 0, 100, 1);
   gtk_scale_set_draw_value (GTK_SCALE (self->priv->volume_scale), FALSE);
-  gtk_widget_set_size_request (self->priv->volume_scale, 100, -1);
+  gtk_widget_set_size_request (self->priv->volume_scale, 200, -1);
   gtk_box_pack_end (GTK_BOX (box), self->priv->volume_scale, TRUE, TRUE, 0);
 
   g_signal_connect (self->priv->volume_scale, "value-changed",

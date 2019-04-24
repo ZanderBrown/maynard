@@ -49,9 +49,6 @@ struct MaynardSoundClass
   GtkBoxClass parent_class;
 };
 
-#define MAYNARD_SOUND_WIDTH (MAYNARD_PANEL_WIDTH * 2.6)
-#define MAYNARD_SOUND_HEIGHT (MAYNARD_PANEL_WIDTH * 2)
-
 GType maynard_sound_get_type (void) G_GNUC_CONST;
 
 GtkWidget * maynard_sound_new (void);
