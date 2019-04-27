@@ -27,7 +27,6 @@
 #include "clock.h"
 
 struct MaynardClockPrivate {
-  GtkWidget *revealer_clock;
   GtkWidget *label;
   GnomeWallClock *wall_clock;
 };
@@ -63,7 +62,7 @@ static void
 maynard_clock_constructed (GObject *object)
 {
   MaynardClock *self = MAYNARD_CLOCK (object);
-  GtkWidget *box;
+  GtkWidget *box, *calendar;
 
   G_OBJECT_CLASS (maynard_clock_parent_class)->constructed (object);
 
@@ -76,23 +75,16 @@ maynard_clock_constructed (GObject *object)
       "maynard-clock");
 
   /* the box for the revealers */
-  box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
+  box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 6);
   gtk_container_add (GTK_CONTAINER (self), box);
 
   /* clock */
-  self->priv->revealer_clock = gtk_revealer_new ();
-  gtk_revealer_set_transition_type (
-      GTK_REVEALER (self->priv->revealer_clock),
-      GTK_REVEALER_TRANSITION_TYPE_SLIDE_LEFT);
-  gtk_revealer_set_reveal_child (
-      GTK_REVEALER (self->priv->revealer_clock), TRUE);
-  gtk_box_pack_start (GTK_BOX (box), self->priv->revealer_clock,
-      TRUE, TRUE, 0);
-
   self->priv->label = gtk_label_new ("");
   gtk_label_set_justify (GTK_LABEL (self->priv->label), GTK_JUSTIFY_CENTER);
-  gtk_container_add (GTK_CONTAINER (self->priv->revealer_clock),
-      self->priv->label);
+  gtk_container_add (GTK_CONTAINER (box), self->priv->label);
+
+  calendar = gtk_calendar_new ();
+  gtk_container_add (GTK_CONTAINER (box), calendar);
 
   wall_clock_notify_cb (self->priv->wall_clock, NULL, self);
 }

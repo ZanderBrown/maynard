@@ -27,11 +27,11 @@
 #include "favorites.h"
 #include "launcher.h"
 #include "clock.h"
-#include "power.h"
 #include "sound.h"
 #include "vertical-clock.h"
 
 #include "items/mnd-panel-button.h"
+#include "items/mnd-power.h"
 
 enum {
   APP_MENU_TOGGLED,

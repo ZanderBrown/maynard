@@ -9,12 +9,12 @@ maynard_SOURCES =				\
 	app-icon.h				\
 	items/mnd-panel-button.c	\
 	items/mnd-panel-button.h	\
+	items/mnd-power.c			\
+	items/mnd-power.h			\
 	clock.c					\
 	clock.h					\
 	sound.c					\
 	sound.h					\
-	power.c					\
-	power.h					\
 	favorites.c				\
 	favorites.h				\
 	shell-app-system.c			\
