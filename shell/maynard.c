@@ -60,30 +60,7 @@ struct desktop {
   struct element *background;
   struct element *panel;
   struct element *curtain;
-
-  guint initial_panel_timeout_id;
-  guint hide_panel_idle_id;
-
-  gboolean grid_visible;
-  gboolean system_visible;
-  gboolean volume_visible;
-  gboolean pointer_out_of_panel;
 };
-
-static gboolean panel_window_enter_cb (GtkWidget *widget,
-    GdkEventCrossing *event, struct desktop *desktop);
-
-static gboolean
-connect_enter_leave_signals (gpointer data)
-{
-  struct desktop *desktop = data;
-  GList *l;
-
-  g_signal_connect (desktop->panel->window, "enter-notify-event",
-      G_CALLBACK (panel_window_enter_cb), desktop);
-
-  return G_SOURCE_REMOVE;
-}
 
 static void
 shell_configure (struct desktop *desktop,
@@ -101,11 +78,6 @@ shell_configure (struct desktop *desktop,
       0, 0);
 
   weston_desktop_shell_desktop_ready (desktop->wshell);
-
-  /* TODO: why does the panel signal leave on drawing for
-   * startup? we don't want to have to have this silly
-   * timeout. */
-  g_timeout_add_seconds (1, connect_enter_leave_signals, desktop);
 }
 
 static void
@@ -137,47 +109,6 @@ static const struct weston_desktop_shell_listener wshell_listener = {
   weston_desktop_shell_prepare_lock_surface,
   weston_desktop_shell_grab_cursor
 };
-
-static gboolean
-panel_window_enter_cb (GtkWidget *widget,
-    GdkEventCrossing *event,
-    struct desktop *desktop)
-{
-  if (desktop->initial_panel_timeout_id > 0)
-    {
-      g_source_remove (desktop->initial_panel_timeout_id);
-      desktop->initial_panel_timeout_id = 0;
-    }
-
-  if (desktop->hide_panel_idle_id > 0)
-    {
-      g_source_remove (desktop->hide_panel_idle_id);
-      desktop->hide_panel_idle_id = 0;
-      return FALSE;
-    }
-
-  if (desktop->pointer_out_of_panel)
-    {
-      desktop->pointer_out_of_panel = FALSE;
-      return FALSE;
-    }
-
-  return FALSE;
-}
-
-static gboolean
-leave_panel_idle_cb (gpointer data)
-{
-  struct desktop *desktop = data;
-
-  desktop->hide_panel_idle_id = 0;
-
-  desktop->system_visible = FALSE;
-  desktop->volume_visible = FALSE;
-  desktop->pointer_out_of_panel = FALSE;
-
-  return G_SOURCE_REMOVE;
-}
 
 static void
 panel_create (struct desktop *desktop)
@@ -546,6 +477,10 @@ main (int argc,
 
   g_resources_register (maynard_get_resource ());
 
+  g_object_set (gtk_settings_get_default (),
+                "gtk-application-prefer-dark-theme", TRUE,
+                NULL);
+
   desktop = malloc (sizeof *desktop);
   desktop->output = NULL;
   desktop->wshell = NULL;
@@ -577,11 +512,6 @@ main (int argc,
                desktop->output, desktop->wshell, desktop->helper);
       return -1;
     }
-
-  desktop->grid_visible = FALSE;
-  desktop->system_visible = FALSE;
-  desktop->volume_visible = FALSE;
-  desktop->pointer_out_of_panel = FALSE;
 
   css_setup (desktop);
   background_create (desktop);
