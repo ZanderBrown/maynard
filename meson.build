@@ -34,5 +34,6 @@ subdir('po')
 subdir('protocol')
 subdir('lib')
 subdir('src')
+subdir('tools')
 
 meson.add_install_script('build-aux/meson/postinstall.py')
