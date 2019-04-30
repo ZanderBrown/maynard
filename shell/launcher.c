@@ -225,7 +225,6 @@ installed_changed_cb (ShellAppSystem *app_system,
   GHashTable *entries = shell_app_system_get_entries (app_system);
   GList *l, *values;
 
-  gint output_width, output_height;
   guint cols;
   guint left, top;
 

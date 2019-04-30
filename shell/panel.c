@@ -62,23 +62,6 @@ maynard_panel_init (MaynardPanel *self)
   self->priv->volume_icon_name = g_strdup ("audio-volume-high-symbolic");
 }
 
-static gboolean
-widget_enter_notify_event_cb (GtkWidget *widget,
-    GdkEventCrossing *event,
-    MaynardPanel *self)
-{
-  gboolean handled;
-  g_signal_emit_by_name (self, "enter-notify-event", event, &handled);
-  return handled;
-}
-
-static void
-app_menu_button_clicked_cb (GtkButton *button,
-    MaynardPanel *self)
-{
-  g_signal_emit (self, signals[APP_MENU_TOGGLED], 0);
-}
-
 static void
 favorite_launched_cb (MaynardFavorites *favorites,
     MaynardPanel *self)
@@ -91,7 +74,6 @@ maynard_panel_constructed (GObject *object)
 {
   MaynardPanel *self = MAYNARD_PANEL (object);
   GtkWidget *main_box, *menu_box, *buttons_box;
-  GtkWidget *image;
   GtkWidget *button;
   GtkWidget *favorites;
   GtkWidget *widget;
@@ -211,7 +193,6 @@ static void
 maynard_panel_class_init (MaynardPanelClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *)klass;
-  GParamSpec *param_spec;
 
   object_class->constructed = maynard_panel_constructed;
   object_class->dispose = maynard_panel_dispose;

@@ -436,9 +436,6 @@ static const struct wl_registry_listener registry_listener = {
 
 static void grab_surface_create(struct desktop *desktop)
 {
-
-  struct wl_surface *s;
-
   GdkWindow *gdk_window;
   struct element *curtain;
 

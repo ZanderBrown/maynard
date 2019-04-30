@@ -88,8 +88,6 @@ maynard_vertical_clock_constructed (GObject *object)
 static void
 maynard_vertical_clock_dispose (GObject *object)
 {
-  MaynardVerticalClock *self = MAYNARD_VERTICAL_CLOCK (object);
-
   G_OBJECT_CLASS (maynard_vertical_clock_parent_class)->dispose (object);
 }
 

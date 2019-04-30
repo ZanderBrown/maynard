@@ -65,7 +65,7 @@ add_favorite (MaynardFavorites *self,
     const gchar *favorite)
 {
   GDesktopAppInfo *info;
-  GtkWidget *button, *image;
+  GtkWidget *button;
   GIcon *icon;
 
   info = g_desktop_app_info_new (favorite);
