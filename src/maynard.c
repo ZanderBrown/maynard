@@ -31,8 +31,6 @@
 #include "weston-desktop-shell-client-protocol.h"
 #include "shell-helper-client-protocol.h"
 
-#include "maynard-resources.h"
-
 #include "app-icon.h"
 #include "favorites.h"
 #include "panel.h"
@@ -471,8 +469,6 @@ main (int argc,
   gdk_set_allowed_backends ("wayland");
 
   gtk_init (&argc, &argv);
-
-  g_resources_register (maynard_get_resource ());
 
   g_object_set (gtk_settings_get_default (),
                 "gtk-application-prefer-dark-theme", TRUE,
