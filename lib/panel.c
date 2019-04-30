@@ -28,26 +28,12 @@
 #include "launcher.h"
 #include "clock.h"
 #include "sound.h"
-#include "vertical-clock.h"
 
 #include "items/mnd-panel-button.h"
 #include "items/mnd-power.h"
-
-enum {
-  APP_MENU_TOGGLED,
-  SYSTEM_TOGGLED,
-  VOLUME_TOGGLED,
-  FAVORITE_LAUNCHED,
-  N_SIGNALS
-};
-static guint signals[N_SIGNALS] = { 0 };
+#include "items/mnd-clock.h"
 
 struct MaynardPanelPrivate {
-  gboolean hidden;
-
-  GtkWidget *system_button;
-
-  gboolean volume_showing;
   GtkWidget *volume_button;
   gchar *volume_icon_name;
 };
@@ -60,13 +46,6 @@ maynard_panel_init (MaynardPanel *self)
   self->priv = maynard_panel_get_instance_private (self);
 
   self->priv->volume_icon_name = g_strdup ("audio-volume-high-symbolic");
-}
-
-static void
-favorite_launched_cb (MaynardFavorites *favorites,
-    MaynardPanel *self)
-{
-  g_signal_emit (self, signals[FAVORITE_LAUNCHED], 0);
 }
 
 static void
@@ -129,9 +108,6 @@ maynard_panel_constructed (GObject *object)
   gtk_container_add (GTK_CONTAINER (main_box), favorites);
   gtk_widget_set_hexpand (favorites, TRUE);
 
-  g_signal_connect (favorites, "app-launched",
-      G_CALLBACK (favorite_launched_cb), self);
-
   menu_box = gtk_box_new (GTK_ORIENTATION_HORIZONTAL, 0);
   gtk_container_add (GTK_CONTAINER (main_box), menu_box);
 
@@ -158,24 +134,16 @@ maynard_panel_constructed (GObject *object)
   gtk_container_add (GTK_CONTAINER (widget), button);
 
   /* system button */
-  button = mnd_panel_button_new ();
+  button = mnd_clock_new ();
   gtk_container_add (GTK_CONTAINER (buttons_box), button);
-  self->priv->system_button = button;
   widget = gtk_popover_new (button);
   gtk_popover_set_constrain_to (GTK_POPOVER (widget), GTK_POPOVER_CONSTRAINT_NONE);
   gtk_menu_button_set_popover (GTK_MENU_BUTTON (button), widget);
   button = maynard_clock_new ();
   gtk_widget_show_all (button);
   gtk_container_add (GTK_CONTAINER (widget), button);
-  button = maynard_vertical_clock_new ();
-  gtk_widget_show_all (button);
-  gtk_container_add (GTK_CONTAINER (self->priv->system_button), button);
 
   /* end of the menu buttons and vertical clock */
-
-  /* done */
-  self->priv->hidden = FALSE;
-  self->priv->volume_showing = FALSE;
 }
 
 static void
@@ -196,22 +164,6 @@ maynard_panel_class_init (MaynardPanelClass *klass)
 
   object_class->constructed = maynard_panel_constructed;
   object_class->dispose = maynard_panel_dispose;
-
-  signals[APP_MENU_TOGGLED] = g_signal_new ("app-menu-toggled",
-      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
-      NULL, G_TYPE_NONE, 0);
-
-  signals[SYSTEM_TOGGLED] = g_signal_new ("system-toggled",
-      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
-      NULL, G_TYPE_NONE, 0);
-
-  signals[VOLUME_TOGGLED] = g_signal_new ("volume-toggled",
-      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
-      NULL, G_TYPE_NONE, 0);
-
-  signals[FAVORITE_LAUNCHED] = g_signal_new ("favorite-launched",
-      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
-      NULL, G_TYPE_NONE, 0);
 }
 
 GtkWidget *

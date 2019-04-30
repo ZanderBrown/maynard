@@ -14,6 +14,8 @@ libmaynard_sources =     [
     'items/mnd-panel-button.h',
     'items/mnd-power.c',
     'items/mnd-power.h',
+    'items/mnd-clock.c',
+    'items/mnd-clock.h',
     'clock.c',
     'clock.h',
     'sound.c',
@@ -24,8 +26,6 @@ libmaynard_sources =     [
     'shell-app-system.h',
     'panel.c',
     'panel.h',
-    'vertical-clock.c',
-    'vertical-clock.h',
     'launcher.c',
     'launcher.h',
 ]

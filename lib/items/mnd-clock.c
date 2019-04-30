@@ -21,20 +21,21 @@
 
 #include "config.h"
 
-#include "vertical-clock.h"
+#include "mnd-clock.h"
 
 #define GNOME_DESKTOP_USE_UNSTABLE_API
 #include <libgnome-desktop/gnome-wall-clock.h>
 
 #include "panel.h"
 
-struct MaynardVerticalClockPrivate {
+typedef struct _MndClockPrivate MndClockPrivate;
+struct _MndClockPrivate {
   GtkWidget *label;
 
   GnomeWallClock *wall_clock;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE(MaynardVerticalClock, maynard_vertical_clock, GTK_TYPE_BOX)
+G_DEFINE_TYPE_WITH_PRIVATE (MndClock, mnd_clock, MND_TYPE_PANEL_BUTTON)
 
 /* this widget takes up the entire width of the panel and displays
  * padding for the first (panel width - vertical clock width) pixels,
@@ -42,67 +43,70 @@ G_DEFINE_TYPE_WITH_PRIVATE(MaynardVerticalClock, maynard_vertical_clock, GTK_TYP
  * a GtkRevealer and only show it when appropriate. */
 
 static void
-maynard_vertical_clock_init (MaynardVerticalClock *self)
+mnd_clock_init (MndClock *self)
 {
-  self->priv = maynard_vertical_clock_get_instance_private (self);
 }
 
 static void
 wall_clock_notify_cb (GnomeWallClock *wall_clock,
     GParamSpec *pspec,
-    MaynardVerticalClock *self)
+    MndClock *self)
 {
+  MndClockPrivate *priv = mnd_clock_get_instance_private (self);
   GDateTime *datetime;
   gchar *str;
 
   datetime = g_date_time_new_now_local ();
 
-  str = g_date_time_format (datetime, "<span font=\"Droid Sans 12\">%H:%M</span>");
-  gtk_label_set_markup (GTK_LABEL (self->priv->label), str);
+  str = g_date_time_format (datetime, "%H:%M");
+  gtk_label_set_markup (GTK_LABEL (priv->label), str);
 
   g_free (str);
   g_date_time_unref (datetime);
 }
 
 static void
-maynard_vertical_clock_constructed (GObject *object)
+mnd_clock_constructed (GObject *object)
 {
-  MaynardVerticalClock *self = MAYNARD_VERTICAL_CLOCK (object);
+  MndClock *self = MND_CLOCK (object);
+  MndClockPrivate *priv = mnd_clock_get_instance_private (self);
 
-  G_OBJECT_CLASS (maynard_vertical_clock_parent_class)->constructed (object);
+  G_OBJECT_CLASS (mnd_clock_parent_class)->constructed (object);
 
-  self->priv->wall_clock = g_object_new (GNOME_TYPE_WALL_CLOCK, NULL);
-  g_signal_connect (self->priv->wall_clock, "notify::clock",
+  priv->wall_clock = g_object_new (GNOME_TYPE_WALL_CLOCK, NULL);
+  g_signal_connect (priv->wall_clock, "notify::clock",
       G_CALLBACK (wall_clock_notify_cb), self);
 
-  gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_HORIZONTAL);
-
   /* the actual clock label */
-  self->priv->label = gtk_label_new ("");
-  gtk_label_set_justify (GTK_LABEL (self->priv->label), GTK_JUSTIFY_CENTER);
-  gtk_box_pack_start (GTK_BOX (self), self->priv->label, FALSE, FALSE, 0);
+  priv->label = gtk_label_new ("");
+  gtk_label_set_justify (GTK_LABEL (priv->label), GTK_JUSTIFY_CENTER);
+  gtk_container_add (GTK_CONTAINER (self), priv->label);
 
-  wall_clock_notify_cb (self->priv->wall_clock, NULL, self);
+  wall_clock_notify_cb (priv->wall_clock, NULL, self);
 }
 
 static void
-maynard_vertical_clock_dispose (GObject *object)
+mnd_clock_dispose (GObject *object)
 {
-  G_OBJECT_CLASS (maynard_vertical_clock_parent_class)->dispose (object);
+  MndClock *self = MND_CLOCK (object);
+  MndClockPrivate *priv = mnd_clock_get_instance_private (self);
+
+  g_clear_object (&priv->wall_clock);
+
+  G_OBJECT_CLASS (mnd_clock_parent_class)->dispose (object);
 }
 
 static void
-maynard_vertical_clock_class_init (MaynardVerticalClockClass *klass)
+mnd_clock_class_init (MndClockClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *)klass;
 
-  object_class->constructed = maynard_vertical_clock_constructed;
-  object_class->dispose = maynard_vertical_clock_dispose;
+  object_class->constructed = mnd_clock_constructed;
+  object_class->dispose = mnd_clock_dispose;
 }
 
 GtkWidget *
-maynard_vertical_clock_new (void)
+mnd_clock_new (void)
 {
-  return g_object_new (MAYNARD_VERTICAL_CLOCK_TYPE,
-      NULL);
+  return g_object_new (MND_TYPE_CLOCK, NULL);
 }
