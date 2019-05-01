@@ -8,8 +8,6 @@ libmaynard_deps = [
 ]
 
 libmaynard_sources =     [
-    'app-icon.c',
-    'app-icon.h',
     'items/mnd-panel-button.c',
     'items/mnd-panel-button.h',
     'items/mnd-power.c',
@@ -20,8 +18,10 @@ libmaynard_sources =     [
     'clock.h',
     'sound.c',
     'sound.h',
-    'favorites.c',
-    'favorites.h',
+    'mnd-favorites-button.c',
+    'mnd-favorites-button.h',
+    'mnd-favorites.c',
+    'mnd-favorites.h',
     'shell-app-system.c',
     'shell-app-system.h',
     'panel.c',

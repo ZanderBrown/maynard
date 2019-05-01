@@ -23,8 +23,6 @@
 
 #include "panel.h"
 
-#include "app-icon.h"
-#include "favorites.h"
 #include "launcher.h"
 #include "clock.h"
 #include "sound.h"
@@ -32,6 +30,8 @@
 #include "items/mnd-panel-button.h"
 #include "items/mnd-power.h"
 #include "items/mnd-clock.h"
+
+#include "mnd-favorites.h"
 
 struct MaynardPanelPrivate {
   GtkWidget *volume_button;
@@ -104,7 +104,7 @@ maynard_panel_constructed (GObject *object)
   gtk_container_add (GTK_CONTAINER (main_box), button);
 
   /* favorites */
-  favorites = maynard_favorites_new ();
+  favorites = mnd_favorites_new ();
   gtk_container_add (GTK_CONTAINER (main_box), favorites);
   gtk_widget_set_hexpand (favorites, TRUE);
 

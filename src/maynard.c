@@ -31,8 +31,6 @@
 #include "weston-desktop-shell-client-protocol.h"
 #include "shell-helper-client-protocol.h"
 
-#include "app-icon.h"
-#include "favorites.h"
 #include "panel.h"
 
 extern char **environ; /* defined by libc */

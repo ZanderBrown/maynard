@@ -21,65 +21,33 @@
 
 #include "config.h"
 
-#include "favorites.h"
-
 #include <gio/gio.h>
 #include <gio/gdesktopappinfo.h>
 #include <gtk/gtk.h>
 
-#include "app-icon.h"
+#include "mnd-favorites.h"
+#include "mnd-favorites-button.h"
 
-enum {
-  APP_LAUNCHED,
-  N_SIGNALS
-};
-static guint signals[N_SIGNALS] = { 0 };
-
-struct MaynardFavoritesPrivate {
+typedef struct _MndFavoritesPrivate MndFavoritesPrivate;
+struct _MndFavoritesPrivate {
   GSettings *settings;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE(MaynardFavorites, maynard_favorites, GTK_TYPE_BOX)
+G_DEFINE_TYPE_WITH_PRIVATE (MndFavorites, mnd_favorites, GTK_TYPE_BOX)
 
 static void
-favorite_clicked (GtkButton *button,
-    MaynardFavorites *self)
-{
-  GAppInfo *info = g_object_get_data (G_OBJECT(button), "info");
-  GError *error = NULL;
-
-  g_app_info_launch (info, NULL, NULL, &error);
-  if (error)
-    {
-      g_warning ("Could not launch app %s: %s",
-          g_app_info_get_name (info),
-          error->message);
-      g_clear_error (&error);
-    }
-
-  g_signal_emit (self, signals[APP_LAUNCHED], 0);
-}
-
-static void
-add_favorite (MaynardFavorites *self,
+add_favorite (MndFavorites *self,
     const gchar *favorite)
 {
   GDesktopAppInfo *info;
   GtkWidget *button;
-  GIcon *icon;
 
   info = g_desktop_app_info_new (favorite);
 
   if (!info)
     return;
 
-  icon = g_app_info_get_icon (G_APP_INFO (info));
-
-  button = maynard_app_icon_new_from_gicon (icon);
-
-  g_object_set_data_full (G_OBJECT (button), "info", info, g_object_unref);
-
-  g_signal_connect (button, "clicked", G_CALLBACK (favorite_clicked), self);
+  button = mnd_favorites_button_new (G_APP_INFO (info));
 
   gtk_box_pack_end (GTK_BOX (self), button, FALSE, FALSE, 0);
 }
@@ -94,7 +62,7 @@ remove_favorite (GtkWidget *favorite,
 static void
 favorites_changed (GSettings *settings,
     const gchar *key,
-    MaynardFavorites *self)
+    MndFavorites *self)
 {
   gchar **favorites = g_settings_get_strv (settings, key);
   gint i;
@@ -113,45 +81,42 @@ favorites_changed (GSettings *settings,
 }
 
 static void
-maynard_favorites_dispose (GObject *object)
+mnd_favorites_dispose (GObject *object)
 {
-  MaynardFavorites *self = MAYNARD_FAVORITES (object);
+  MndFavorites *self = MND_FAVORITES (object);
+  MndFavoritesPrivate *priv = mnd_favorites_get_instance_private (self);
 
-  g_clear_object (&self->priv->settings);
+  g_clear_object (&priv->settings);
 
-  G_OBJECT_CLASS (maynard_favorites_parent_class)->dispose (object);
+  G_OBJECT_CLASS (mnd_favorites_parent_class)->dispose (object);
 }
 
 static void
-maynard_favorites_init (MaynardFavorites *self)
+mnd_favorites_init (MndFavorites *self)
 {
-  self->priv = maynard_favorites_get_instance_private (self);
+  MndFavoritesPrivate *priv = mnd_favorites_get_instance_private (self);
 
-  self->priv->settings = g_settings_new ("org.raspberrypi.maynard");
-  g_signal_connect (self->priv->settings, "changed::favorites",
+  priv->settings = g_settings_new ("org.raspberrypi.maynard");
+  g_signal_connect (priv->settings, "changed::favorites",
                     G_CALLBACK (favorites_changed), self);
-  favorites_changed (self->priv->settings, "favorites", self);
+  favorites_changed (priv->settings, "favorites", self);
 
   gtk_orientable_set_orientation (GTK_ORIENTABLE (self), GTK_ORIENTATION_HORIZONTAL);
 }
 
 static void
-maynard_favorites_class_init (MaynardFavoritesClass *klass)
+mnd_favorites_class_init (MndFavoritesClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *)klass;
 
-  object_class->dispose = maynard_favorites_dispose;
-
-  signals[APP_LAUNCHED] = g_signal_new ("app-launched",
-      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
-      NULL, G_TYPE_NONE, 0);
+  object_class->dispose = mnd_favorites_dispose;
 }
 
 GtkWidget *
-maynard_favorites_new (void)
+mnd_favorites_new (void)
 {
-  return g_object_new (MAYNARD_TYPE_FAVORITES,
-      "orientation", GTK_ORIENTATION_HORIZONTAL,
-      "halign", GTK_ALIGN_START,
-      NULL);
+  return g_object_new (MND_TYPE_FAVORITES,
+                       "orientation", GTK_ORIENTATION_HORIZONTAL,
+                       "halign", GTK_ALIGN_START,
+                       NULL);
 }
