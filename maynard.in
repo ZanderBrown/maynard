@@ -1,23 +1,10 @@
 #! /bin/sh
 
 PREFIX=@prefix@
-LIBEXECDIR=$PREFIX/libexec
-ABS_BUILDDIR=@abs_builddir@
 DEFAULT_BACKGROUND=/usr/share/wallpapers/Hanami/contents/images/3872x2592.jpg
 
 md5() {
     cat "$1" 2> /dev/null | md5sum
-}
-
-check_install() {
-    local_maynard="$ABS_BUILDDIR/shell/maynard"
-    installed_maynard="$LIBEXECDIR/maynard"
-    if [ ! -e "$local_maynard" -o \
-         ! -e "$installed_maynard" -o \
-         "`md5 \"$local_maynard\"`" != "`md5 \"$installed_maynard\"`" ]; then
-        echo "It looks like you forgot to run 'make install'." >&2
-        exit 1
-    fi
 }
 
 mkdir ~/.config > /dev/null 2>&1
@@ -33,7 +20,6 @@ if [ "$?" = "0" ]; then
     # installation.
     if ! cat /etc/os-release 2> /dev/null | grep 'ID=raspbian' > /dev/null; then
         # Non-Raspbian, we can launch weston under X.
-        check_install
         if [ -x $PREFIX/bin/weston ]; then
             XDG_DATA_DIRS=$XDG_DATA_DIRS:$PREFIX/share/ $PREFIX/bin/weston
         else

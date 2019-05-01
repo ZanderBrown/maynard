@@ -25,17 +25,15 @@
 
 #include "launcher.h"
 #include "clock.h"
-#include "sound.h"
 
 #include "items/mnd-panel-button.h"
 #include "items/mnd-power.h"
 #include "items/mnd-clock.h"
+#include "items/mnd-sound.h"
 
 #include "mnd-favorites.h"
 
 struct MaynardPanelPrivate {
-  GtkWidget *volume_button;
-  gchar *volume_icon_name;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(MaynardPanel, maynard_panel, GTK_TYPE_WINDOW)
@@ -43,9 +41,6 @@ G_DEFINE_TYPE_WITH_PRIVATE(MaynardPanel, maynard_panel, GTK_TYPE_WINDOW)
 static void
 maynard_panel_init (MaynardPanel *self)
 {
-  self->priv = maynard_panel_get_instance_private (self);
-
-  self->priv->volume_icon_name = g_strdup ("audio-volume-high-symbolic");
 }
 
 static void
@@ -120,18 +115,9 @@ maynard_panel_constructed (GObject *object)
   gtk_widget_show (button);
   gtk_container_add (GTK_CONTAINER (buttons_box), button);
 
-  self->priv->volume_button = mnd_panel_button_new ();
-  widget = gtk_image_new_from_icon_name ("audio-volume-muted-symbolic", GTK_ICON_SIZE_BUTTON);
-  gtk_image_set_pixel_size (GTK_IMAGE (widget), 16);
-  gtk_button_set_image (GTK_BUTTON (self->priv->volume_button), widget);
-  gtk_container_add (GTK_CONTAINER (buttons_box), self->priv->volume_button);
-  gtk_widget_show (self->priv->volume_button);
-  widget = gtk_popover_new (self->priv->volume_button);
-  gtk_popover_set_constrain_to (GTK_POPOVER (widget), GTK_POPOVER_CONSTRAINT_NONE);
-  gtk_menu_button_set_popover (GTK_MENU_BUTTON (self->priv->volume_button), widget);
-  button = maynard_sound_new ();
+  button = mnd_sound_new ();
   gtk_widget_show_all (button);
-  gtk_container_add (GTK_CONTAINER (widget), button);
+  gtk_container_add (GTK_CONTAINER (buttons_box), button);
 
   /* system button */
   button = mnd_clock_new ();
@@ -147,23 +133,11 @@ maynard_panel_constructed (GObject *object)
 }
 
 static void
-maynard_panel_dispose (GObject *object)
-{
-  MaynardPanel *self = MAYNARD_PANEL (object);
-
-  g_free (self->priv->volume_icon_name);
-  self->priv->volume_icon_name = NULL;
-
-  G_OBJECT_CLASS (maynard_panel_parent_class)->dispose (object);
-}
-
-static void
 maynard_panel_class_init (MaynardPanelClass *klass)
 {
   GObjectClass *object_class = (GObjectClass *)klass;
 
   object_class->constructed = maynard_panel_constructed;
-  object_class->dispose = maynard_panel_dispose;
 }
 
 GtkWidget *

@@ -3,9 +3,13 @@ libmaynard_deps = [
     glib_dep,
     gnome_menu_dep,
     gnome_desktop_dep,
-    alsa_dep,
     upower_dep,
+    libgvc_dep,
 ]
+
+cc = meson.get_compiler('c')
+m_dep = cc.find_library('m', required : false)
+libmaynard_deps += m_dep
 
 libmaynard_sources =     [
     'items/mnd-panel-button.c',
@@ -14,10 +18,12 @@ libmaynard_sources =     [
     'items/mnd-power.h',
     'items/mnd-clock.c',
     'items/mnd-clock.h',
+    'items/mnd-sound.c',
+    'items/mnd-sound.h',
+    'items/mnd-sound-popover.c',
+    'items/mnd-sound-popover.h',
     'clock.c',
     'clock.h',
-    'sound.c',
-    'sound.h',
     'mnd-favorites-button.c',
     'mnd-favorites-button.h',
     'mnd-favorites.c',
@@ -35,13 +41,14 @@ libmaynard_sources += gnome.compile_resources('maynard-resources',
   c_name: 'maynard'
 )
 
-libmaynard_lib = library ('maynard', libmaynard_sources,
-                          dependencies: libmaynard_deps,
-                          install: true)
+libmaynard_lib = static_library ('maynard', libmaynard_sources,
+                                 dependencies: libmaynard_deps,
+                                 install: true,
+                                 install_rpath: maynard_libdir)
 
 libmaynard_inc = include_directories ('.')
 
-libmaynard_dep = declare_dependency (link_with: libmaynard_lib,
+libmaynard_dep = declare_dependency (link_whole: libmaynard_lib,
                                      dependencies: libmaynard_deps,
                                      include_directories: libmaynard_inc)
 
