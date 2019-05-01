@@ -56,30 +56,28 @@ update_volume (MndSoundPopover *self)
         break;
     }
   }
-    gtk_image_set_from_icon_name (GTK_IMAGE (priv->volume_image),
-                                  image_name,
-                                  GTK_ICON_SIZE_BUTTON);
+  gtk_image_set_from_icon_name (GTK_IMAGE (priv->volume_image),
+                                image_name,
+                                GTK_ICON_SIZE_BUTTON);
 
-    vol_max = gvc_mixer_control_get_vol_max_amplified (priv->mix);
+  vol_max = gvc_mixer_control_get_vol_max_amplified (priv->mix);
 
-    // Each scroll increments by 5%, much better than units..
-    step_size = vol_max / 20;
+  // Each scroll increments by 5%, much better than units..
+  step_size = vol_max / 20;
 
-    g_signal_handlers_block_by_func (priv->volume_scale, volume_changed_cb, self);
+  g_signal_handlers_block_by_func (priv->volume_scale, volume_changed_cb, self);
 
-    gtk_range_set_range (GTK_RANGE (priv->volume_scale), 0, vol_norm);
-    gtk_range_set_value (GTK_RANGE (priv->volume_scale), vol);
+  gtk_range_set_range (GTK_RANGE (priv->volume_scale), 0, vol_norm);
+  gtk_range_set_value (GTK_RANGE (priv->volume_scale), vol);
 
-    adj = gtk_range_get_adjustment (GTK_RANGE (priv->volume_scale));
-    gtk_adjustment_set_step_increment (adj, step_size);
+  adj = gtk_range_get_adjustment (GTK_RANGE (priv->volume_scale));
+  gtk_adjustment_set_step_increment (adj, step_size);
 
-    g_signal_handlers_unblock_by_func (priv->volume_scale, volume_changed_cb, self);
+  g_signal_handlers_unblock_by_func (priv->volume_scale, volume_changed_cb, self);
 
-    if (vol != 0) { // If we haven't muted
-       priv->volume = vol; // Get our new volume
-    }
-
-  g_message ("%s", G_STRLOC);
+  if (vol != 0) { // If we haven't muted
+      priv->volume = vol; // Get our new volume
+  }
 }
 
 static void
@@ -95,6 +93,7 @@ volume_changed_cb (GtkRange *range,
   scale_value = gtk_range_get_value (GTK_RANGE (priv->volume_scale));
 
   if (gvc_mixer_stream_get_is_muted (priv->stream) && scale_value > 0) {
+    gvc_mixer_stream_set_is_muted (priv->stream, TRUE);
     gvc_mixer_stream_change_is_muted (priv->stream, TRUE);
   }
 
@@ -104,8 +103,6 @@ volume_changed_cb (GtkRange *range,
       gvc_mixer_stream_push_volume (priv->stream);
   }
   g_signal_handlers_unblock_by_func (priv->volume_scale, volume_changed_cb, self);
-
-  g_message ("%s", G_STRLOC);
 }
 
 static void
@@ -114,8 +111,6 @@ stream_changed (GvcMixerStream  *stream,
                 MndSoundPopover *self)
 {
   update_volume (self);
-
-  g_message ("%s", G_STRLOC);
 }
 
 static void
@@ -132,8 +127,6 @@ set_default_mixer (MndSoundPopover *self)
   g_signal_connect (priv->stream, "notify::is-muted", G_CALLBACK (stream_changed), self);
 
   update_volume(self);
-
-  g_message ("%s", G_STRLOC);
 }
 
 static void

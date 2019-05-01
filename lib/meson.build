@@ -32,8 +32,8 @@ libmaynard_sources =     [
     'shell-app-system.h',
     'panel.c',
     'panel.h',
-    'launcher.c',
-    'launcher.h',
+    'mnd-launcher.c',
+    'mnd-launcher.h',
 ]
 
 libmaynard_sources += gnome.compile_resources('maynard-resources',

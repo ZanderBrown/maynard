@@ -22,34 +22,29 @@
 
 #include "config.h"
 
-#include "launcher.h"
+#include "mnd-launcher.h"
 
 #include "clock.h"
 #include "panel.h"
 #include "shell-app-system.h"
 
-enum {
-  APP_LAUNCHED,
-  N_SIGNALS
-};
-static guint signals[N_SIGNALS] = { 0 };
-
-struct MaynardLauncherPrivate {
+typedef struct _MndLauncherPrivate MndLauncherPrivate;
+struct _MndLauncherPrivate {
   ShellAppSystem *app_system;
   GtkWidget *scrolled_window;
   GtkWidget *grid;
 };
 
-G_DEFINE_TYPE_WITH_PRIVATE(MaynardLauncher, maynard_launcher, GTK_TYPE_POPOVER)
+G_DEFINE_TYPE_WITH_PRIVATE(MndLauncher, mnd_launcher, GTK_TYPE_POPOVER)
 
 /* each grid item is 114x114 */
 #define GRID_ITEM_WIDTH 114
 #define GRID_ITEM_HEIGHT 114
 
 static void
-maynard_launcher_init (MaynardLauncher *self)
+mnd_launcher_init (MndLauncher *self)
 {
-  self->priv = maynard_launcher_get_instance_private (self);
+  gtk_widget_init_template (GTK_WIDGET (self));
 }
 
 static gint
@@ -95,13 +90,14 @@ get_child_position_cb (GtkOverlay *overlay,
 static gboolean
 app_launched_idle_cb (gpointer data)
 {
-  MaynardLauncher *self = data;
+  MndLauncher *self = data;
+  MndLauncherPrivate *priv = mnd_launcher_get_instance_private (self);
   GtkAdjustment *adjustment;
 
   /* make the scrolled window go back to the top */
 
   adjustment = gtk_scrolled_window_get_vadjustment (
-      GTK_SCROLLED_WINDOW (self->priv->scrolled_window));
+      GTK_SCROLLED_WINDOW (priv->scrolled_window));
 
   gtk_adjustment_set_value (adjustment, 0.0);
 
@@ -112,13 +108,12 @@ static void
 clicked_cb (GtkWidget *widget,
     GDesktopAppInfo *info)
 {
-  MaynardLauncher *self;
+  MndLauncher *self;
 
   g_app_info_launch (G_APP_INFO (info), NULL, NULL, NULL);
 
   self = g_object_get_data (G_OBJECT (widget), "launcher");
   g_assert (self);
-  g_signal_emit (self, signals[APP_LAUNCHED], 0);
 
   gtk_popover_popdown (GTK_POPOVER (self));
 
@@ -145,7 +140,7 @@ app_leave_cb (GtkWidget *widget,
 }
 
 static GtkWidget *
-app_launcher_new_from_desktop_info (MaynardLauncher *self,
+app_launcher_new_from_desktop_info (MndLauncher *self,
     GDesktopAppInfo *info)
 {
   GIcon *icon;
@@ -220,8 +215,9 @@ app_launcher_new_from_desktop_info (MaynardLauncher *self,
 
 static void
 installed_changed_cb (ShellAppSystem *app_system,
-    MaynardLauncher *self)
+    MndLauncher *self)
 {
+  MndLauncherPrivate *priv = mnd_launcher_get_instance_private (self);
   GHashTable *entries = shell_app_system_get_entries (app_system);
   GList *l, *values;
 
@@ -229,7 +225,7 @@ installed_changed_cb (ShellAppSystem *app_system,
   guint left, top;
 
   /* remove all children first */
-  gtk_container_foreach (GTK_CONTAINER (self->priv->grid),
+  gtk_container_foreach (GTK_CONTAINER (priv->grid),
       (GtkCallback) gtk_widget_destroy, NULL);
 
   values = g_hash_table_get_values (entries);
@@ -244,7 +240,7 @@ installed_changed_cb (ShellAppSystem *app_system,
       GDesktopAppInfo *info = G_DESKTOP_APP_INFO (l->data);
       GtkWidget *app = app_launcher_new_from_desktop_info (self, info);
 
-      gtk_grid_attach (GTK_GRID (self->priv->grid), app, left++, top, 1, 1);
+      gtk_grid_attach (GTK_GRID (priv->grid), app, left++, top, 1, 1);
 
       if (left > cols)
         {
@@ -255,59 +251,50 @@ installed_changed_cb (ShellAppSystem *app_system,
 
   g_list_free (values);
 
-  gtk_widget_show_all (self->priv->grid);
+  gtk_widget_show_all (priv->grid);
 }
 
 static void
-maynard_launcher_constructed (GObject *object)
+mnd_launcher_constructed (GObject *object)
 {
-  MaynardLauncher *self = MAYNARD_LAUNCHER (object);
+  MndLauncher *self = MND_LAUNCHER (object);
+  MndLauncherPrivate *priv = mnd_launcher_get_instance_private (self);
 
-  G_OBJECT_CLASS (maynard_launcher_parent_class)->constructed (object);
+  G_OBJECT_CLASS (mnd_launcher_parent_class)->constructed (object);
 
   /* make it black and slightly alpha */
   gtk_style_context_add_class (
       gtk_widget_get_style_context (GTK_WIDGET (self)),
       "maynard-grid");
 
-  /* scroll it */
-  self->priv->scrolled_window = gtk_scrolled_window_new (NULL, NULL);
-  gtk_container_add (GTK_CONTAINER (self), self->priv->scrolled_window);
-  gtk_scrolled_window_set_policy (GTK_SCROLLED_WINDOW (self->priv->scrolled_window),
-                                  GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
-  gtk_widget_show (self->priv->scrolled_window);
-
-  /* main grid for apps */
-  self->priv->grid = gtk_grid_new ();
-  gtk_container_add (GTK_CONTAINER (self->priv->scrolled_window),
-      self->priv->grid);
-
   /* fill the grid with apps */
-  self->priv->app_system = shell_app_system_get_default ();
-  g_signal_connect (self->priv->app_system, "installed-changed",
+  priv->app_system = shell_app_system_get_default ();
+  g_signal_connect (priv->app_system, "installed-changed",
       G_CALLBACK (installed_changed_cb), self);
 
   /* now actually fill the grid */
-  installed_changed_cb (self->priv->app_system, self);
+  installed_changed_cb (priv->app_system, self);
 }
 
 static void
-maynard_launcher_class_init (MaynardLauncherClass *klass)
+mnd_launcher_class_init (MndLauncherClass *klass)
 {
-  GObjectClass *object_class = (GObjectClass *)klass;
+  GObjectClass   *object_class = G_OBJECT_CLASS (klass);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
 
-  object_class->constructed = maynard_launcher_constructed;
+  object_class->constructed = mnd_launcher_constructed;
 
-  signals[APP_LAUNCHED] = g_signal_new ("app-launched",
-      G_TYPE_FROM_CLASS (klass), G_SIGNAL_RUN_LAST, 0, NULL, NULL,
-      NULL, G_TYPE_NONE, 0);
+  gtk_widget_class_set_template_from_resource (widget_class, "/org/raspberry-pi/maynard/mnd-launcher.ui");
+
+  gtk_widget_class_bind_template_child_private (widget_class, MndLauncher, grid);
+  gtk_widget_class_bind_template_child_private (widget_class, MndLauncher, scrolled_window);
 }
 
 GtkWidget *
-maynard_launcher_new (GtkWidget *background_widget)
+mnd_launcher_new (GtkWidget *background_widget)
 {
-  return g_object_new (MAYNARD_LAUNCHER_TYPE,
-      "relative-to", background_widget,
-      "height-request", 400,
-      NULL);
+  return g_object_new (MND_TYPE_LAUNCHER,
+                       "relative-to", background_widget,
+                       "height-request", 400,
+                       NULL);
 }

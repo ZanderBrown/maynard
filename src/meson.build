@@ -23,6 +23,7 @@ maynard_deps += m_dep
 executable ('maynard', maynard_sources,
             dependencies: maynard_deps,
             install: true,
-            install_dir: get_option('libexecdir'))
+            install_dir: get_option('libexecdir'),
+            install_rpath: maynard_libdir)
 
 subdir('helper')
