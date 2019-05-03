@@ -1,7 +1,6 @@
 libmaynard_deps = [
     gtk_dep,
     glib_dep,
-    gnome_menu_dep,
     gnome_desktop_dep,
     upower_dep,
     libgvc_dep,

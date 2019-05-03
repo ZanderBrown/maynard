@@ -194,7 +194,9 @@ mnd_sound_popover_class_init (MndSoundPopoverClass *klass)
 }
 
 GtkWidget *
-mnd_sound_popover_new ()
+mnd_sound_popover_new (GtkWidget *parent)
 {
-  return g_object_new (MND_TYPE_SOUND_POPOVER, NULL);
+  return g_object_new (MND_TYPE_SOUND_POPOVER,
+                       "relative-to", parent,
+                       NULL);
 }

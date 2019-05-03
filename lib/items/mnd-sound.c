@@ -27,12 +27,7 @@
 #include <glib/gi18n-lib.h>
 
 #include "items/mnd-sound.h"
-
-enum {
-  VOLUME_CHANGED,
-  N_SIGNALS
-};
-static guint signals[N_SIGNALS] = { 0 };
+#include "items/mnd-sound-popover.h"
 
 typedef struct _MndSoundPrivate MndSoundPrivate;
 struct _MndSoundPrivate {
@@ -52,7 +47,7 @@ mnd_sound_init (MndSound *self)
   gtk_widget_show (priv->image);
   gtk_container_add (GTK_CONTAINER (self), priv->image);
 
-  widget = mnd_sound_popover_new (self);
+  widget = mnd_sound_popover_new (GTK_WIDGET (self));
   gtk_popover_set_constrain_to (GTK_POPOVER (widget), GTK_POPOVER_CONSTRAINT_NONE);
   gtk_menu_button_set_popover (GTK_MENU_BUTTON (self), widget);
 }
@@ -60,7 +55,6 @@ mnd_sound_init (MndSound *self)
 static void
 mnd_sound_class_init (MndSoundClass *klass)
 {
-  GObjectClass *object_class = (GObjectClass *)klass;
 }
 
 GtkWidget *
