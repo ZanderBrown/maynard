@@ -11,12 +11,8 @@ G_DECLARE_DERIVABLE_TYPE (ShellAppSystem, shell_app_system, SHELL, APP_SYSTEM, G
 struct _ShellAppSystemClass
 {
   GObjectClass parent_class;
-
-  void (*installed_changed)(ShellAppSystem *appsys, gpointer user_data);
-  void (*favorites_changed)(ShellAppSystem *appsys, gpointer user_data);
 };
 
 ShellAppSystem *shell_app_system_get_default (void);
-GHashTable     *shell_app_system_get_entries (ShellAppSystem *self);
 
 G_END_DECLS

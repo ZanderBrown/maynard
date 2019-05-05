@@ -33,10 +33,7 @@
 #include "mnd-launcher.h"
 #include "mnd-favorites.h"
 
-struct MaynardPanelPrivate {
-};
-
-G_DEFINE_TYPE_WITH_PRIVATE(MaynardPanel, maynard_panel, GTK_TYPE_WINDOW)
+G_DEFINE_TYPE (MaynardPanel, maynard_panel, GTK_TYPE_WINDOW)
 
 static void
 maynard_panel_init (MaynardPanel *self)

@@ -28,9 +28,14 @@
 #include "panel.h"
 #include "shell-app-system.h"
 
+#include "gtk-list-models/gtksortlistmodel.h"
+#include "gtk-list-models/gtkfilterlistmodel.h"
+
 typedef struct _MndLauncherPrivate MndLauncherPrivate;
 struct _MndLauncherPrivate {
-  ShellAppSystem *app_system;
+  GtkSortListModel   *model;
+  GtkFilterListModel *filter;
+
   GtkWidget *scrolled_window;
   GtkWidget *grid;
 };
@@ -49,7 +54,8 @@ mnd_launcher_init (MndLauncher *self)
 
 static gint
 sort_apps (gconstpointer a,
-    gconstpointer b)
+           gconstpointer b,
+           gpointer      data)
 {
   GAppInfo *info1 = G_APP_INFO (a);
   GAppInfo *info2 = G_APP_INFO (b);
@@ -214,42 +220,35 @@ app_launcher_new_from_desktop_info (MndLauncher *self,
 }
 
 static void
-installed_changed_cb (ShellAppSystem *app_system,
-    MndLauncher *self)
+installed_changed_cb (GListModel     *model,
+                      guint           position,
+                      guint           removed,
+                      guint           added,
+                      MndLauncher    *self)
 {
   MndLauncherPrivate *priv = mnd_launcher_get_instance_private (self);
-  GHashTable *entries = shell_app_system_get_entries (app_system);
-  GList *l, *values;
-
-  guint cols;
+  int i = 0;
+  GDesktopAppInfo *info;
   guint left, top;
 
   /* remove all children first */
   gtk_container_foreach (GTK_CONTAINER (priv->grid),
       (GtkCallback) gtk_widget_destroy, NULL);
 
-  values = g_hash_table_get_values (entries);
-  values = g_list_sort (values, sort_apps);
-
-  cols = 6;
-  cols--; /* because we start from zero here */
-
   left = top = 0;
-  for (l = values; l; l = l->next)
+  while ((info = g_list_model_get_item (G_LIST_MODEL (model), i)))
     {
-      GDesktopAppInfo *info = G_DESKTOP_APP_INFO (l->data);
       GtkWidget *app = app_launcher_new_from_desktop_info (self, info);
 
       gtk_grid_attach (GTK_GRID (priv->grid), app, left++, top, 1, 1);
 
-      if (left > cols)
+      if (left > 5)
         {
           left = 0;
           top++;
         }
+      i++;
     }
-
-  g_list_free (values);
 
   gtk_widget_show_all (priv->grid);
 }
@@ -268,12 +267,17 @@ mnd_launcher_constructed (GObject *object)
       "maynard-grid");
 
   /* fill the grid with apps */
-  priv->app_system = shell_app_system_get_default ();
-  g_signal_connect (priv->app_system, "installed-changed",
-      G_CALLBACK (installed_changed_cb), self);
+  priv->model = gtk_sort_list_model_new (G_LIST_MODEL (shell_app_system_get_default ()),
+                                         sort_apps,
+                                         NULL,
+                                         NULL);
+  g_signal_connect (priv->model,
+                    "items-changed",
+                    G_CALLBACK (installed_changed_cb),
+                    self);
 
   /* now actually fill the grid */
-  installed_changed_cb (priv->app_system, self);
+  installed_changed_cb (G_LIST_MODEL (priv->model), 0, 0, 0, self);
 }
 
 static void
