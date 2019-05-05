@@ -26,7 +26,7 @@
 
 #include "clock.h"
 #include "panel.h"
-#include "shell-app-system.h"
+#include "mnd-app-list-model.h"
 
 #include "gtk-list-models/gtksortlistmodel.h"
 #include "gtk-list-models/gtkfilterlistmodel.h"
@@ -261,13 +261,8 @@ mnd_launcher_constructed (GObject *object)
 
   G_OBJECT_CLASS (mnd_launcher_parent_class)->constructed (object);
 
-  /* make it black and slightly alpha */
-  gtk_style_context_add_class (
-      gtk_widget_get_style_context (GTK_WIDGET (self)),
-      "maynard-grid");
-
   /* fill the grid with apps */
-  priv->model = gtk_sort_list_model_new (G_LIST_MODEL (shell_app_system_get_default ()),
+  priv->model = gtk_sort_list_model_new (G_LIST_MODEL (mnd_app_list_model_get_default ()),
                                          sort_apps,
                                          NULL,
                                          NULL);
@@ -278,6 +273,13 @@ mnd_launcher_constructed (GObject *object)
 
   /* now actually fill the grid */
   installed_changed_cb (G_LIST_MODEL (priv->model), 0, 0, 0, self);
+}
+
+static void
+search_changed (GtkSearchEntry *entry,
+                MndLauncher    *self)
+{
+
 }
 
 static void
@@ -292,6 +294,8 @@ mnd_launcher_class_init (MndLauncherClass *klass)
 
   gtk_widget_class_bind_template_child_private (widget_class, MndLauncher, grid);
   gtk_widget_class_bind_template_child_private (widget_class, MndLauncher, scrolled_window);
+
+  gtk_widget_class_bind_template_callback (widget_class, search_changed);
 }
 
 GtkWidget *
