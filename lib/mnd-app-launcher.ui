@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.22.1 -->
+<interface>
+  <requires lib="gtk+" version="3.20"/>
+  <template class="MndAppLauncher" parent="GtkEventBox">
+    <property name="visible">True</property>
+    <property name="can_focus">False</property>
+    <signal name="enter-notify-event" handler="app_enter_cb" object="reveal" swapped="no"/>
+    <signal name="leave-notify-event" handler="app_leave_cb" object="reveal" swapped="no"/>
+    <child>
+      <object class="GtkOverlay">
+        <property name="visible">True</property>
+        <property name="can_focus">False</property>
+        <signal name="get-child-position" handler="get_child_position_cb" swapped="no"/>
+        <child>
+          <object class="GtkButton">
+            <property name="visible">True</property>
+            <property name="can_focus">True</property>
+            <property name="receives_default">True</property>
+            <property name="relief">none</property>
+            <signal name="clicked" handler="clicked_cb" object="MndAppLauncher" swapped="no"/>
+            <child>
+              <object class="GtkImage" id="image">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="margin_left">16</property>
+                <property name="margin_right">16</property>
+                <property name="margin_top">16</property>
+                <property name="margin_bottom">16</property>
+                <property name="pixel_size">64</property>
+                <property name="icon_name">application-x-executable-symbolic</property>
+                <property name="icon_size">6</property>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="index">-1</property>
+          </packing>
+        </child>
+        <child type="overlay">
+          <object class="GtkRevealer" id="reveal">
+            <property name="visible">True</property>
+            <property name="can_focus">False</property>
+            <property name="valign">end</property>
+            <property name="transition_type">slide-up</property>
+            <child>
+              <object class="GtkLabel" id="label">
+                <property name="visible">True</property>
+                <property name="can_focus">False</property>
+                <property name="label" translatable="yes">label</property>
+                <property name="ellipsize">end</property>
+                <style>
+                  <class name="maynard-grid-label"/>
+                </style>
+              </object>
+            </child>
+          </object>
+          <packing>
+            <property name="pass_through">True</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <style>
+      <class name="maynard-grid-item"/>
+    </style>
+  </template>
+</interface>

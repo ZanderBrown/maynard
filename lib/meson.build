@@ -37,6 +37,8 @@ libmaynard_sources = [
     'mnd-app-list-model.h',
     'panel.c',
     'panel.h',
+    'mnd-app-launcher.c',
+    'mnd-app-launcher.h',
     'mnd-launcher.c',
     'mnd-launcher.h',
 ]

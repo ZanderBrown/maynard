@@ -4,5 +4,6 @@
     <file compressed="true">style.css</file>
     <file compressed="true">wallpaper.jpg</file>
     <file compressed="true">mnd-launcher.ui</file>
+    <file compressed="true">mnd-app-launcher.ui</file>
   </gresource>
 </gresources>
