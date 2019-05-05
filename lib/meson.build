@@ -10,7 +10,13 @@ cc = meson.get_compiler('c')
 m_dep = cc.find_library('m', required : false)
 libmaynard_deps += m_dep
 
-libmaynard_sources =     [
+libmaynard_sources = [
+    'gtk-list-models/gtkrbtree.c',
+    'gtk-list-models/gtkrbtreeprivate.h',
+    'gtk-list-models/gtkfilterlistmodel.c',
+    'gtk-list-models/gtkfilterlistmodel.h',
+    'gtk-list-models/gtksortlistmodel.c',
+    'gtk-list-models/gtksortlistmodel.h',
     'items/mnd-panel-button.c',
     'items/mnd-panel-button.h',
     'items/mnd-power.c',
