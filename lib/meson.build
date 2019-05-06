@@ -41,6 +41,8 @@ libmaynard_sources = [
     'mnd-app-launcher.h',
     'mnd-launcher.c',
     'mnd-launcher.h',
+    'mnd-wallpaper.c',
+    'mnd-wallpaper.h',
 ]
 
 libmaynard_sources += gnome.compile_resources('maynard-resources',

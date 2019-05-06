@@ -21,7 +21,6 @@
  * IN THE SOFTWARE.
  */
 
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -31,12 +30,10 @@
 #include "weston-desktop-shell-client-protocol.h"
 
 #include "panel.h"
-
-extern char **environ; /* defined by libc */
+#include "mnd-wallpaper.h"
 
 struct element {
   GtkWidget *window;
-  GdkPixbuf *pixbuf;
   struct wl_surface *surface;
 };
 
@@ -130,99 +127,16 @@ panel_create (struct desktop *desktop)
   desktop->panel = panel;
 }
 
-/* Expose callback for the drawing area */
-static gboolean
-draw_cb (GtkWidget *widget,
-    cairo_t *cr,
-    gpointer data)
-{
-  struct desktop *desktop = data;
-
-  gdk_cairo_set_source_pixbuf (cr, desktop->background->pixbuf, 0, 0);
-  cairo_paint (cr);
-
-  return TRUE;
-}
-
-/* Destroy handler for the window */
-static void
-destroy_cb (GObject *object,
-    gpointer data)
-{
-  gtk_main_quit ();
-}
-
-static GdkPixbuf *
-scale_background (GdkPixbuf *original_pixbuf)
-{
-  /* Scale original_pixbuf so it mostly fits on the screen.
-   * If the aspect ratio is different than a bit on the right or on the
-   * bottom could be cropped out. */
-  GdkDisplay *display = gdk_display_get_default ();
-  /* There's no primary monitor on nested wayland so just use the
-     first one for now */
-  GdkMonitor *monitor = gdk_display_get_monitor (display, 0);
-  GdkRectangle geom;
-  gint original_width, original_height;
-  gint final_width, final_height;
-  gdouble ratio_horizontal, ratio_vertical, ratio;
-
-  g_return_val_if_fail(monitor, NULL);
-
-  gdk_monitor_get_geometry (monitor, &geom);
-
-  original_width = gdk_pixbuf_get_width (original_pixbuf);
-  original_height = gdk_pixbuf_get_height (original_pixbuf);
-
-  ratio_horizontal = (double) geom.width / original_width;
-  ratio_vertical = (double) geom.height / original_height;
-  ratio = MAX (ratio_horizontal, ratio_vertical);
-
-  final_width = ceil (ratio * original_width);
-  final_height = ceil (ratio * original_height);
-
-  return gdk_pixbuf_scale_simple (original_pixbuf,
-      final_width, final_height, GDK_INTERP_BILINEAR);
-}
-
 static void
 background_create (struct desktop *desktop)
 {
   GdkWindow *gdk_window;
   struct element *background;
-  const gchar *filename;
-  GdkPixbuf *unscaled_background;
 
   background = malloc (sizeof *background);
   memset (background, 0, sizeof *background);
 
-  filename = g_getenv ("MAYNARD_BACKGROUND");
-  if (filename && filename[0] != '\0')
-    unscaled_background = gdk_pixbuf_new_from_file (filename, NULL);
-  else
-    unscaled_background = gdk_pixbuf_new_from_resource ("/org/raspberry-pi/maynard/wallpaper.jpg", NULL);
-
-  if (!unscaled_background)
-    {
-      g_message ("Could not load background (%s).",
-          filename ? filename : "built-in");
-      exit (EXIT_FAILURE);
-    }
-
-  background->pixbuf = scale_background (unscaled_background);
-  g_object_unref (unscaled_background);
-
-  background->window = gtk_window_new (GTK_WINDOW_TOPLEVEL);
-
-  g_signal_connect (background->window, "destroy",
-      G_CALLBACK (destroy_cb), NULL);
-
-  g_signal_connect (background->window, "draw",
-      G_CALLBACK (draw_cb), desktop);
-
-  gtk_window_set_title (GTK_WINDOW (background->window), "maynard");
-  gtk_window_set_decorated (GTK_WINDOW (background->window), FALSE);
-  gtk_widget_realize (background->window);
+  background->window = mnd_wallpaper_new ();
 
   gdk_window = gtk_widget_get_window (background->window);
   gdk_wayland_window_set_use_custom_surface (gdk_window);

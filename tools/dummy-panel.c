@@ -1,6 +1,7 @@
 #include <gtk/gtk.h>
 
 #include "panel.h"
+#include "mnd-wallpaper.h"
 
 int
 main (int argc, char** argv)
@@ -32,9 +33,12 @@ main (int argc, char** argv)
                 NULL);
 
   panel = maynard_panel_new ();
-  gtk_window_set_decorated (GTK_WINDOW (panel), TRUE);
   gtk_window_set_default_size (GTK_WINDOW (panel), 700, 32);
   gtk_widget_show_all (panel);
+
+  panel = mnd_wallpaper_new ();
+  gtk_window_set_default_size (GTK_WINDOW (panel), 700, 400);
+  gtk_widget_show (panel);
 
   gtk_main ();
 

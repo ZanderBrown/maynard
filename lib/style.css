@@ -24,8 +24,9 @@
 }
 
 .maynard-grid-label {
-    padding: 5px 0;
-    background-color: alpha(black, 0.9);
+    padding: 6px 0;
+    background-color: alpha(black, 0.8);
+    border-top: 1px solid gray;
 }
 
 popover {

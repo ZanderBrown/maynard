@@ -10,5 +10,12 @@
         will be displayed in the panel.
       </description>
     </key>
+    <key name="wallpaper-path" type="s">
+      <default>''</default>
+      <summary>Wallpaper path</summary>
+      <description>
+        Path the file to use a wallpaper
+      </description>
+    </key>
   </schema>
 </schemalist>

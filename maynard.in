@@ -1,18 +1,12 @@
 #! /bin/sh
 
 PREFIX=@prefix@
-DEFAULT_BACKGROUND=/usr/share/wallpapers/Hanami/contents/images/3872x2592.jpg
 
 md5() {
     cat "$1" 2> /dev/null | md5sum
 }
 
 mkdir ~/.config > /dev/null 2>&1
-
-if [ -z "${MAYNARD_BACKGROUND+_}" -a \
-     -e "$DEFAULT_BACKGROUND" ]; then
-    export MAYNARD_BACKGROUND="$DEFAULT_BACKGROUND"
-fi
 
 xdpyinfo > /dev/null 2>&1
 if [ "$?" = "0" ]; then
