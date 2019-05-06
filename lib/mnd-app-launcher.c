@@ -143,7 +143,7 @@ mnd_app_launcher_class_init (MndAppLauncherClass *klass)
         g_signal_new ("launched",
                       G_TYPE_FROM_CLASS (klass),
                       G_SIGNAL_RUN_LAST,
-                      NULL, NULL, NULL, NULL,
+                      0, NULL, NULL, NULL,
                       G_TYPE_NONE, 0);
 
   gtk_widget_class_set_template_from_resource (widget_class, "/org/raspberry-pi/maynard/mnd-app-launcher.ui");

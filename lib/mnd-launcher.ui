@@ -15,7 +15,7 @@
         <property name="orientation">vertical</property>
         <property name="spacing">6</property>
         <child>
-          <object class="GtkSearchEntry">
+          <object class="GtkSearchEntry" id="entry">
             <property name="width_request">400</property>
             <property name="visible">True</property>
             <property name="can_focus">True</property>

@@ -19,6 +19,10 @@
     box-shadow: none;
 }
 
+.maynard-grid-item button:focus {
+    background-color: alpha(black, 0.4);
+}
+
 .maynard-grid-label {
     padding: 5px 0;
     background-color: alpha(black, 0.9);

@@ -37,6 +37,7 @@ struct _MndLauncherPrivate {
   GtkSortListModel   *model;
   GtkFilterListModel *filter;
 
+  GtkWidget *entry;
   GtkWidget *scrolled_window;
   GtkWidget *grid;
 };
@@ -62,6 +63,53 @@ sort_apps (gconstpointer a,
   g_free (s2);
 
   return ret;
+}
+
+static gboolean
+search_apps (gpointer item, gpointer data)
+{
+  MndLauncher *self = data;
+  MndLauncherPrivate *priv = mnd_launcher_get_instance_private (self);
+  GAppInfo *info = item;
+  const char *search = gtk_entry_get_text (GTK_ENTRY (priv->entry));
+  const char *str;
+
+  if ((str = g_app_info_get_display_name (info)) && strstr (str, search))
+    return TRUE;
+
+  if ((str = g_app_info_get_name (info)) && strstr (str, search))
+    return TRUE;
+
+  if ((str = g_app_info_get_description (info)) && strstr (str, search))
+    return TRUE;
+
+  if ((str = g_app_info_get_executable (info)) && strstr (str, search))
+    return TRUE;
+
+  if (G_IS_DESKTOP_APP_INFO (info)) {
+    const char * const *kwds;
+    int i = 0;
+
+    if ((str = g_desktop_app_info_get_generic_name (G_DESKTOP_APP_INFO (info))) &&
+         strstr (str, search))
+      return TRUE;
+
+    if ((str = g_desktop_app_info_get_categories (G_DESKTOP_APP_INFO (info))) &&
+         strstr (str, search))
+      return TRUE;
+
+    kwds = g_desktop_app_info_get_keywords (G_DESKTOP_APP_INFO (info));
+
+    if (kwds) {
+      while ((str = kwds[i])) {
+        if (strstr (str, search))
+          return TRUE;
+        i++;
+      }
+    }
+  }
+
+  return FALSE;
 }
 
 static gboolean
@@ -137,7 +185,11 @@ mnd_launcher_init (MndLauncher *self)
                                          sort_apps,
                                          NULL,
                                          NULL);
-  g_signal_connect (priv->model,
+  priv->filter = gtk_filter_list_model_new (G_LIST_MODEL (priv->model),
+                                            search_apps,
+                                            self,
+                                            NULL);
+  g_signal_connect (priv->filter,
                     "items-changed",
                     G_CALLBACK (installed_changed_cb),
                     self);
@@ -147,19 +199,50 @@ mnd_launcher_init (MndLauncher *self)
 }
 
 static void
+mnd_launcher_finalize (GObject *object)
+{
+  MndLauncher *self = MND_LAUNCHER (object);
+  MndLauncherPrivate *priv = mnd_launcher_get_instance_private (self);
+
+  g_clear_object (&priv->model);
+  g_clear_object (&priv->filter);
+
+  G_OBJECT_CLASS (mnd_launcher_parent_class)->finalize (object);
+}
+
+static gboolean
+mnd_launcher_key_press_event (GtkWidget   *widget,
+                              GdkEventKey *event)
+{
+  MndLauncher *self = MND_LAUNCHER (widget);
+  MndLauncherPrivate *priv = mnd_launcher_get_instance_private (self);
+
+  return gtk_search_entry_handle_event (GTK_SEARCH_ENTRY (priv->entry), 
+                                        (GdkEvent *) event);
+}
+
+static void
 search_changed (GtkSearchEntry *entry,
                 MndLauncher    *self)
 {
+  MndLauncherPrivate *priv = mnd_launcher_get_instance_private (self);
 
+  gtk_filter_list_model_refilter (priv->filter);
 }
 
 static void
 mnd_launcher_class_init (MndLauncherClass *klass)
 {
+  GObjectClass   *object_class = G_OBJECT_CLASS (klass);
   GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
+
+  object_class->finalize = mnd_launcher_finalize;
+
+  widget_class->key_press_event = mnd_launcher_key_press_event;
 
   gtk_widget_class_set_template_from_resource (widget_class, "/org/raspberry-pi/maynard/mnd-launcher.ui");
 
+  gtk_widget_class_bind_template_child_private (widget_class, MndLauncher, entry);
   gtk_widget_class_bind_template_child_private (widget_class, MndLauncher, grid);
   gtk_widget_class_bind_template_child_private (widget_class, MndLauncher, scrolled_window);
 
