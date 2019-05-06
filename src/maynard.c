@@ -44,7 +44,6 @@ struct desktop {
   struct wl_output *output;
 
   struct wl_seat *seat;
-  struct wl_pointer *pointer;
 
   GdkDisplay *gdk_display;
 
@@ -203,79 +202,11 @@ css_setup (struct desktop *desktop)
   g_object_unref (file);
 }
 
-
-static void
-pointer_handle_enter (void *data,
-    struct wl_pointer *pointer,
-    uint32_t serial,
-    struct wl_surface *surface,
-    wl_fixed_t sx_w,
-    wl_fixed_t sy_w)
-{
-}
-
-static void
-pointer_handle_leave (void *data,
-    struct wl_pointer *pointer,
-    uint32_t serial,
-    struct wl_surface *surface)
-{
-}
-
-static void
-pointer_handle_motion (void *data,
-    struct wl_pointer *pointer,
-    uint32_t time,
-    wl_fixed_t sx_w,
-    wl_fixed_t sy_w)
-{
-}
-
-static void
-pointer_handle_button (void *data,
-    struct wl_pointer *pointer,
-    uint32_t serial,
-    uint32_t time,
-    uint32_t button,
-    uint32_t state_w)
-{
-}
-
-static void
-pointer_handle_axis (void *data,
-    struct wl_pointer *pointer,
-    uint32_t time,
-    uint32_t axis,
-    wl_fixed_t value)
-{
-}
-
-static const struct wl_pointer_listener pointer_listener = {
-  pointer_handle_enter,
-  pointer_handle_leave,
-  pointer_handle_motion,
-  pointer_handle_button,
-  pointer_handle_axis,
-};
-
 static void
 seat_handle_capabilities (void *data,
     struct wl_seat *seat,
     enum wl_seat_capability caps)
 {
-  struct desktop *desktop = data;
-
-  if ((caps & WL_SEAT_CAPABILITY_POINTER) && !desktop->pointer) {
-    desktop->pointer = wl_seat_get_pointer(seat);
-    wl_pointer_set_user_data (desktop->pointer, desktop);
-    wl_pointer_add_listener(desktop->pointer, &pointer_listener,
-          desktop);
-  } else if (!(caps & WL_SEAT_CAPABILITY_POINTER) && desktop->pointer) {
-    wl_pointer_destroy(desktop->pointer);
-    desktop->pointer = NULL;
-  }
-
-  /* TODO: keyboard and touch */
 }
 
 static void
@@ -356,8 +287,6 @@ static void grab_surface_create(struct desktop *desktop)
 
   gtk_widget_show_all (curtain->window);
   weston_desktop_shell_set_grab_surface(desktop->wshell, curtain->surface);
-
-
 }
 
 int
@@ -378,8 +307,7 @@ main (int argc,
   desktop->output = NULL;
   desktop->wshell = NULL;
   desktop->seat = NULL;
-  desktop->pointer = NULL;
-
+  
   desktop->gdk_display = gdk_display_get_default ();
   desktop->display =
     gdk_wayland_display_get_wl_display (desktop->gdk_display);
