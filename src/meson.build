@@ -12,8 +12,6 @@ maynard_sources = [
     'maynard.c',
     weston_desktop_shell_client_protocol_h,
     weston_desktop_shell_protocol_c,
-    shell_helper_protocol_c,
-    shell_helper_client_protocol_h,
 ]
 
 cc = meson.get_compiler('c')
@@ -25,5 +23,3 @@ executable ('maynard', maynard_sources,
             install: true,
             install_dir: get_option('libexecdir'),
             install_rpath: maynard_libdir)
-
-subdir('helper')

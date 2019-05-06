@@ -29,7 +29,6 @@
 #include <gdk/gdkwayland.h>
 
 #include "weston-desktop-shell-client-protocol.h"
-#include "shell-helper-client-protocol.h"
 
 #include "panel.h"
 
@@ -46,7 +45,6 @@ struct desktop {
   struct wl_registry *registry;
   struct weston_desktop_shell *wshell;
   struct wl_output *output;
-  struct shell_helper *helper;
 
   struct wl_seat *seat;
   struct wl_pointer *pointer;
@@ -69,9 +67,6 @@ shell_configure (struct desktop *desktop,
 
   gtk_window_resize (GTK_WINDOW (desktop->panel->window),
       width, 32);
-
-  shell_helper_move_surface (desktop->helper, desktop->panel->surface,
-      0, 0);
 
   weston_desktop_shell_desktop_ready (desktop->wshell);
 }
@@ -129,8 +124,6 @@ panel_create (struct desktop *desktop)
       panel->surface);
   weston_desktop_shell_set_panel_position (desktop->wshell,
      WESTON_DESKTOP_SHELL_PANEL_POSITION_TOP);
-
-  shell_helper_set_panel (desktop->helper, panel->surface);
 
   gtk_widget_show_all (panel->window);
 
@@ -411,11 +404,6 @@ registry_handle_global (void *data,
           &wl_seat_interface, 1);
       wl_seat_add_listener (d->seat, &seat_listener, d);
     }
-  else if (!strcmp (interface, "shell_helper"))
-    {
-      d->helper = wl_registry_bind (registry, name,
-          &shell_helper_interface, 1);
-    }
 }
 
 static void
@@ -475,7 +463,6 @@ main (int argc,
   desktop = malloc (sizeof *desktop);
   desktop->output = NULL;
   desktop->wshell = NULL;
-  desktop->helper = NULL;
   desktop->seat = NULL;
   desktop->pointer = NULL;
 
@@ -493,14 +480,14 @@ main (int argc,
       &registry_listener, desktop);
 
   /* Wait until we have been notified about the compositor,
-   * shell, and shell helper objects */
-  if (!desktop->output || !desktop->wshell || !desktop->helper)
+   * and shell objects */
+  if (!desktop->output || !desktop->wshell)
     wl_display_roundtrip (desktop->display);
-  if (!desktop->output || !desktop->wshell || !desktop->helper)
+  if (!desktop->output || !desktop->wshell)
     {
-      fprintf (stderr, "could not find output, shell or helper modules\n");
-      fprintf (stderr, "output: %p, wshell: %p, helper: %p\n",
-               desktop->output, desktop->wshell, desktop->helper);
+      fprintf (stderr, "could not find output or shell modules\n");
+      fprintf (stderr, "output: %p, wshell: %p\n",
+               desktop->output, desktop->wshell);
       return -1;
     }
 

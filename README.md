@@ -14,9 +14,6 @@ To build maynard use:
 
 Before running maynard you need a ~/.config/weston.ini like
 
-    [core]
-    modules=<installdir>/lib/weston/shell-helper.so
-   
     [shell]
     client=<installdir>/libexec/maynard
     focus-animation=dim-layer
