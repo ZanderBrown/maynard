@@ -41,9 +41,10 @@ panel-button {
     padding: 3px 6px;
     color: white;
     border: none;
+    transition: 0.2s background ease-in-out;
 }
 
 panel-button:hover {
     color: white;
-    background: black;
+    background: rgb(66, 51, 51);
 }

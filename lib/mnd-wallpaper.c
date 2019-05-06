@@ -97,10 +97,6 @@ mnd_wallpaper_init (MndWallpaper *self)
                 "decorated", FALSE,
                 NULL);
 
-
-  gtk_style_context_add_class (gtk_widget_get_style_context (GTK_WIDGET (self)),
-                               "maynard-clock");
-
   prepare_pixbuf (self);
 
   gtk_widget_realize (GTK_WIDGET (self));

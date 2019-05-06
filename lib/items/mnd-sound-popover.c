@@ -12,6 +12,8 @@ struct _MndSoundPopoverPrivate {
   GtkWidget *volume_scale;
   GtkWidget *volume_image;
 
+  gchar *icon_name;
+
   GvcMixerControl *mix;
   GvcMixerStream *stream;
 
@@ -20,6 +22,13 @@ struct _MndSoundPopoverPrivate {
 typedef struct _MndSoundPopoverPrivate MndSoundPopoverPrivate;
 
 G_DEFINE_TYPE_WITH_PRIVATE (MndSoundPopover, mnd_sound_popover, GTK_TYPE_POPOVER)
+
+enum {
+  PROP_0,
+  PROP_ICON_NAME,
+  LAST_PROP
+};
+static GParamSpec *pspecs[LAST_PROP] = { NULL, };
 
 static void
 volume_changed_cb (GtkRange *range, MndSoundPopover *self);
@@ -59,6 +68,8 @@ update_volume (MndSoundPopover *self)
   gtk_image_set_from_icon_name (GTK_IMAGE (priv->volume_image),
                                 image_name,
                                 GTK_ICON_SIZE_BUTTON);
+  priv->icon_name = image_name;
+  g_object_notify_by_pspec (self, pspecs[PROP_ICON_NAME]);
 
   vol_max = gvc_mixer_control_get_vol_max_amplified (priv->mix);
 
@@ -149,6 +160,8 @@ mnd_sound_popover_init (MndSoundPopover *self)
   MndSoundPopoverPrivate *priv = mnd_sound_popover_get_instance_private (MND_SOUND_POPOVER (self));
   GtkWidget *box;
 
+  priv->icon_name = NULL;
+
   priv->mix = gvc_mixer_control_new (_("Maynard"));
   g_signal_connect (priv->mix, "state-changed", G_CALLBACK (mixer_state_change), self);
   g_signal_connect (priv->mix, "default-sink-changed", G_CALLBACK (mixer_sink_change), self);
@@ -181,8 +194,28 @@ mnd_sound_popover_dispose (GObject *object)
   MndSoundPopoverPrivate *priv = mnd_sound_popover_get_instance_private (MND_SOUND_POPOVER (object));
 
   g_clear_object (&priv->mix);
+  g_free (priv->icon_name);
 
   G_OBJECT_CLASS (mnd_sound_popover_parent_class)->dispose (object);
+}
+
+static void
+mnd_sound_popover_get_property (GObject    *object,
+                                guint       property_id,
+                                GValue     *value,
+                                GParamSpec *pspec)
+{
+  MndSoundPopover *self = MND_SOUND_POPOVER (object);
+  MndSoundPopoverPrivate *priv = mnd_sound_popover_get_instance_private (self);
+
+  switch (property_id) {
+    case PROP_ICON_NAME:
+      g_value_set_string (value, priv->icon_name);
+      break;
+    default:
+      G_OBJECT_WARN_INVALID_PROPERTY_ID (object, property_id, pspec);
+      break;
+  }
 }
 
 static void
@@ -191,6 +224,14 @@ mnd_sound_popover_class_init (MndSoundPopoverClass *klass)
   GObjectClass   *object_class = G_OBJECT_CLASS (klass);
 
   object_class->dispose = mnd_sound_popover_dispose;
+  object_class->get_property = mnd_sound_popover_get_property;
+
+  pspecs[PROP_ICON_NAME] =
+    g_param_spec_string ("icon-name", "Icon name", "Current icon name",
+                         NULL,
+                         G_PARAM_READABLE);
+
+  g_object_class_install_properties (object_class, LAST_PROP, pspecs);
 }
 
 GtkWidget *

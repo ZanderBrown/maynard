@@ -21,9 +21,6 @@
 
 #include "config.h"
 
-#include <alsa/asoundlib.h>
-#include <pulse/pulseaudio.h>
-#include <gvc-mixer-control.h>
 #include <glib/gi18n-lib.h>
 
 #include "items/mnd-sound.h"
@@ -32,9 +29,27 @@
 typedef struct _MndSoundPrivate MndSoundPrivate;
 struct _MndSoundPrivate {
   GtkWidget *image;
+  GtkWidget *popover;
 };
 
 G_DEFINE_TYPE_WITH_PRIVATE(MndSound, mnd_sound, MND_TYPE_PANEL_BUTTON)
+
+static void
+icon_changed (GObject    *object,
+              GParamSpec *pspec,
+              MndSound   *self)
+{
+  MndSoundPrivate *priv = mnd_sound_get_instance_private (self);
+  gchar *icon_name;
+
+  g_object_get (priv->popover,
+                "icon-name", &icon_name,
+                NULL);
+
+  gtk_image_set_from_icon_name (GTK_IMAGE (priv->image),
+                                icon_name,
+                                GTK_ICON_SIZE_BUTTON);
+}
 
 static void
 mnd_sound_init (MndSound *self)
@@ -47,9 +62,16 @@ mnd_sound_init (MndSound *self)
   gtk_widget_show (priv->image);
   gtk_container_add (GTK_CONTAINER (self), priv->image);
 
-  widget = mnd_sound_popover_new (GTK_WIDGET (self));
-  gtk_popover_set_constrain_to (GTK_POPOVER (widget), GTK_POPOVER_CONSTRAINT_NONE);
-  gtk_menu_button_set_popover (GTK_MENU_BUTTON (self), widget);
+  priv->popover = mnd_sound_popover_new (GTK_WIDGET (self));
+  g_signal_connect (priv->popover,
+                    "notify::icon-name",
+                    G_CALLBACK (icon_changed),
+                    self);
+  gtk_popover_set_constrain_to (GTK_POPOVER (priv->popover),
+                                GTK_POPOVER_CONSTRAINT_NONE);
+  gtk_menu_button_set_popover (GTK_MENU_BUTTON (self), priv->popover);
+
+  icon_changed (priv->popover, NULL, self);
 }
 
 static void
